@@ -1,0 +1,5 @@
+g++ -std=c++11 -c -o main.o main.cc
+g++ main.o -o main
+
+./main
+
