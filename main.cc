@@ -14,10 +14,15 @@ int main(){
   printf("%d\n", col_int.items[i]);
 */
 
-int a[] = {0,0,0,3,4,5,5,56,6,6};
+    // EID(u), NAME, TYPE
+//    Table<int(autoincrement), std::string, std::uint32_t> t_entities ("data/entities.csv");
+    // SID(u), EID, TYPE
+Table<std::uint32_t, std::uint32_t, std::uint32_t> t_sensors ("data/sensors.csv");
+    // SID(u), TS, X, Y, Z, V, A, VX, VY, VZ, AX, AY, AZ
+//    Table<std::uint32_t, double, int, int, int, std::uint32_t, std::uint32_t, int, int, int, int, int, int> t_events ("data/full-game.csv");
+//int a[] = {0,0,0,3,4,5,5,56,6,6};
 
-SortedDict s_d(a);
-
+//SortedDict s_d(a);
 //printf(s_d.encoded_dict);
 
 
