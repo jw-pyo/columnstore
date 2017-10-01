@@ -1,3 +1,6 @@
+#ifndef _TABLE_H_
+#define _TABLE_H_
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -5,78 +8,38 @@
 #include <set>
 #include <tuple>
 #include <utility>
+#include <fstream>
 
-
+#include "util.h"
+#include "Column.h"
 using namespace std;
-vector<string> split(const string &s, char delim) {
-            vector<string> elems;
-                split(s, delim, back_inserter(elems));
-                    return elems;
-};
 
-/*
- * template<typename T>
-class SortedDict {
+
+template<typename T1, typename T2, typename T3>
+class Table {
 
     public:
-        SortedDict<T>() {};
-        SortedDict (T[] &dataArr) {
+       Table<T1, T2, T3> (string* table_col_namelist, string data, int num) {
+	    name = table_col_namelist[0];
+            col_1 = Column<T1> (table_col_namelist[1], num);
+            col_2 = Column<T2> (table_col_namelist[2], num);
+            col_3 = Column<T3> (table_col_namelist[3], num);
 
-            //  1. count the distinct value
-            //  2. sort
-            //
-            encoded_dict.insert(dataArr, dataArr + sizeof(T));
-
-        };
-
-        set<T> encoded_dict;
-};
-*/
-
-template<typename T1>
-class Column {
-    public:
-        Column<T1>(int num) {
-            items = (T1 *)malloc(sizeof(T1)*num);
-        };
-
-        T1* items;
-        //SortedDict s_dict;
-        //Column<T1>* prev=NULL;
-};
-
-
-class Table<uint32_t, uint32_t, uint32_t> {
-
-    public:
-       // Table<T1, T2, T3>(int num) {
-       //     
-       //     Column<T1> col_1 = Column<T1>(num);
-       //     Column<T2> col_2 = Column<T2>(num);
-       //     Column<T3> col_3 = Column<T3>(num);
-       // };
-
-        Table(const char* data) {
-        
-        ifstream dataFile(data);
-        string line;
-        set<uint32_t> t1;
-        set<uint32_t> t2;
-        set<uint32_t> t3;
-
-        while(getline(dataFile, line, '\n'))
+	    ifstream dataFile(data);
+	    string line;
+	    while(getline(dataFile, line))
             {
-               vector<string> line_arr = split(line, ',');
-               t1.insert(line_arr.get(0));
-               t2.insert(line_arr.get(1));
-               t3.insert(line_arr.get(2));
-            }
-        for(set<uint32_t>::iterator i = t1.begin(); i!= t1.end(); i++)
-                printf(*i);
+	       string* line_arr = strSplit(line, ",");
+	       col_1.push_back(convert_to<T1>(line_arr[0]));
+	       col_2.push_back(convert_to<T2>(line_arr[1]));
+	       col_3.push_back(convert_to<T3>(line_arr[2]));
+	    }		 
         };
-    Column<uint32_t> col_1;
-    Column<uint32_t> col_2;
-    Column<uint32_t> col_3;
+
+    Column<T1> col_1;
+    Column<T2> col_2;
+    Column<T3> col_3;
+    string name;
 };
 /*
 int main(int argc, char* argv[]) {
@@ -94,3 +57,6 @@ int main(int argc, char* argv[]) {
   return 0;
     }
     */
+
+
+#endif
