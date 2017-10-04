@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <set>
+#include <map>
 #include <algorithm>
 #include <stdlib.h>
 #include <math.h>
@@ -34,22 +35,24 @@ class Column {
 	};
 
 	~Column<T>()	{ 
-	    delete sdict;
+	    sdict.clear();
 	    cout << "Column " << name << " is free from memory." << endl;
 	};
 
 	void	push_back(T& val) {
-	    if(sdict.count(T) <= 0) sdict.insert(pair<T, int>(val, distinct_num++));
+	    if(sdict.count(val) <= 0) sdict.insert(pair<T, int>(val, distinct_num++));
 	    else;
 	};
-	void	make_edict(DataColumn<T>* raw_col) {
+	void	make_edict(DataColumn<T> raw_col) {
 	    distinct_num = sdict.size();
-	    bit_num = (int)floor(log2((double)distinct_num))+1; //think about null value
-	    edict = new EncodedDict(sdict, bit_num);
-	    edict.make_contents(raw_col);
+	    bit_num = (int)floor(log2((double)distinct_num)); //think about null value
+	    edict = new EncodedDict<T>(raw_col, sdict, bit_num, record_num);
+	    //return edict;
+	    //edict.make_contents(raw_col);
+	    //edict.print_edict();
 	}
 
-	void	allocate_sdict()  { //DEPRECATED
+	/*void	allocate_sdict()  { //DEPRECATED
 	    sdict = (T*)malloc(distinct_num * sizeof(T));
 	    int i = 0;
 	    for(typename set<T>::iterator itr = m_set.begin(); itr != m_set.end(); ++itr) {
@@ -57,27 +60,27 @@ class Column {
 		cout << sdict[i] << endl;
 		i++;
 	    }	
-	};
+	};*/
 	
-	void	print() {
+	/*void	print() {
 	    cout << name << " column:" << endl;
 	    int i = 0;
 	    for(typename vector<T>::iterator itr = m_col.begin(); itr != m_col.end(); itr++) {
 		cout << "Column[" << i << "]: " << *itr << endl;
 		i++; }
-	};
+	};*/
 	
 	void	print_sdict() {
 	    cout << name << " column(eliminate dup):" << endl;
 	    int i = 0;
-	    for(typename map<T>::iterator itr = sdict.begin(); itr != sdict.end(); ++itr) {
+	    for(typename map<T, int>::iterator itr = sdict.begin(); itr != sdict.end(); ++itr) {
 		cout << "Column[" << i << "]: " << *itr << endl;
 		i++; }
 	};
 
-	void sort() {
+	/*void sort() {
 	    std::sort(m_col.begin(), m_col.end(), CompareByMember<T>());
-	};
+	};*/
 
 	void print_max() {
 	    cout << name << ": max value is " << *m_set.rbegin() << endl;
@@ -89,7 +92,7 @@ class Column {
 	
 	set<T> m_set; //the real data of eliminating duplication
 	map<T, int> sdict;
-	EncodedDict* edict; // eliminate duplication, 
+	EncodedDict<T>* edict; // eliminate duplication, 
 	int record_num;
 	int distinct_num=0;
 	int bit_num;

@@ -1,9 +1,12 @@
-#include "DataArray.h"
-//#include "Table.h"
 //#include "Column.h"
+
+#include "PackedArray.h"
+#include "DataArray.h"
+#include "Table.h"
 #include "util.h"
 
 #include <stdio.h>
+#include <iostream>
 #include <vector>
 #include <fstream>
 
@@ -21,7 +24,14 @@ DataArray_3<uint32_t, string, uint32_t>* entities = new DataArray_3<uint32_t, st
 DataArray_13<uint32_t, double, int, int, int, uint32_t, uint32_t, int, int, int, int, int, int>* sample_game = new DataArray_13<uint32_t, double, int, int, int, uint32_t, uint32_t, int, int, int, int, int, int>(sample_game_name, "data/sample-game.csv", 1048576);
 //put the dataarray into Table
 
-sensors->rawcol_2.print_sdict();
+Table_3<uint32_t, uint32_t, uint32_t>* t_sensors = new Table_3<uint32_t, uint32_t, uint32_t>(sensors_name, sensors);
+
+delete sensors;
+delete entities;
+delete sample_game;
+
+cout <<" delete the table " << endl;
+t_sensors->col_2.edict->print_edict();
 
 /*
 sample_game->col_1.print();
