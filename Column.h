@@ -5,7 +5,12 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <stdlib.h>
+#include <math.h>
+
 #include "EncodedDict.h"
+#include "DataArray.h"
+
 using namespace std;
 
 template <typename U>
@@ -26,19 +31,34 @@ class Column {
 	Column<T>(string name_, int record_num_)	{
 	    name = name_;
 	    record_num = record_num_;
-	    m_col.reserve(record_num);
 	};
 
 	~Column<T>()	{ 
-	    m_col.clear();
+	    delete sdict;
 	    cout << "Column " << name << " is free from memory." << endl;
 	};
 
-	void	push_back(T val) {
-	    m_col.push_back(val);
-	    m_set.insert(val);
+	void	push_back(T& val) {
+	    if(sdict.count(T) <= 0) sdict.insert(pair<T, int>(val, distinct_num++));
+	    else;
 	};
+	void	make_edict(DataColumn<T>* raw_col) {
+	    distinct_num = sdict.size();
+	    bit_num = (int)floor(log2((double)distinct_num))+1; //think about null value
+	    edict = new EncodedDict(sdict, bit_num);
+	    edict.make_contents(raw_col);
+	}
 
+	void	allocate_sdict()  { //DEPRECATED
+	    sdict = (T*)malloc(distinct_num * sizeof(T));
+	    int i = 0;
+	    for(typename set<T>::iterator itr = m_set.begin(); itr != m_set.end(); ++itr) {
+		sdict[i] = *itr;
+		cout << sdict[i] << endl;
+		i++;
+	    }	
+	};
+	
 	void	print() {
 	    cout << name << " column:" << endl;
 	    int i = 0;
@@ -47,10 +67,10 @@ class Column {
 		i++; }
 	};
 	
-	void	print_set() {
+	void	print_sdict() {
 	    cout << name << " column(eliminate dup):" << endl;
 	    int i = 0;
-	    for(typename set<T>::iterator itr = m_set.begin(); itr != m_set.end(); ++itr) {
+	    for(typename map<T>::iterator itr = sdict.begin(); itr != sdict.end(); ++itr) {
 		cout << "Column[" << i << "]: " << *itr << endl;
 		i++; }
 	};
@@ -58,17 +78,22 @@ class Column {
 	void sort() {
 	    std::sort(m_col.begin(), m_col.end(), CompareByMember<T>());
 	};
-	// optimize: delete m_col after making m_set
-	void optimize() {
-	    m_col.clear();
+
+	void print_max() {
+	    cout << name << ": max value is " << *m_set.rbegin() << endl;
+	}
+
+	int get_index(T& val) {
+	}
+
 	
-	};
-	
-	vector<T> m_col; // real data Column
 	set<T> m_set; //the real data of eliminating duplication
-	EncodedDict* e_dict; // eliminate duplication, 
-	string name;
+	map<T, int> sdict;
+	EncodedDict* edict; // eliminate duplication, 
 	int record_num;
+	int distinct_num=0;
+	int bit_num;
+	string name;
 };
 
 #endif
