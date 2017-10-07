@@ -10,7 +10,7 @@
 #include <math.h>
 
 #include "EncodedDict.h"
-#include "DataArray.h"
+//#include "DataArray.h"
 
 using namespace std;
 
@@ -26,27 +26,42 @@ struct CompareByMember {
 template <typename T>
 class Column {
     public:
-	
-	Column<T>()	{};
-	
-	Column<T>(string name_, int record_num_)	{
-	    name = name_;
+	Column<T>(string* table_col_namelist, int record_num_, int col_num_)	{
+	    name = table_col_namelist[col_num_ + 2];
 	    record_num = record_num_;
+	    col_num = col_num_;
+
+	    ifstream dataFile(table_col_namelist[0]);
+	    string line;
+	    int i = 0;
+	    while(getline(dataFile, line)){
+	    	string* line_arr = strSplit(line, ",");
+		push_back(convert_to<T>(line_arr[col_num]));
+	   	i++; 
+	    }
+
+	    assert(i == record_num);
+
+	    make_edict(table_col_namelist);
+
 	};
 
 	~Column<T>()	{ 
 	    sdict.clear();
+	    delete edict;
 	    cout << "Column " << name << " is free from memory." << endl;
 	};
 
-	void	push_back(T& val) {
-	    if(sdict.count(val) <= 0) sdict.insert(pair<T, int>(val, distinct_num++));
-	    else;
+	void	push_back(T val) {
+	    if(sdict.count(val) > 0) {}
+	    else{
+		sdict.insert(pair<T, int>(val, distinct_num++));
+	    }
 	};
-	void	make_edict(DataColumn<T> raw_col) {
+	void	make_edict(string* table_col_namelist_) {
 	    distinct_num = sdict.size();
 	    bit_num = (int)floor(log2((double)distinct_num)); //think about null value
-	    edict = new EncodedDict<T>(raw_col, sdict, bit_num, record_num);
+	    edict = new EncodedDict<T>(table_col_namelist_, sdict, col_num, bit_num, record_num);
 	    //return edict;
 	    //edict.make_contents(raw_col);
 	    //edict.print_edict();
@@ -70,30 +85,25 @@ class Column {
 		i++; }
 	};*/
 	
-	void	print_sdict() {
-	    cout << name << " column(eliminate dup):" << endl;
-	    int i = 0;
+	void	print_info() {
+	    cout << "=============================" << endl;
+	    cout << "'" << name << "' sdict is ... " << endl;
 	    for(typename map<T, int>::iterator itr = sdict.begin(); itr != sdict.end(); ++itr) {
-		cout << "Column[" << i << "]: " << *itr << endl;
-		i++; }
+		cout << "sdict[" << (*itr).first << "]: " << (*itr).second << endl;
+		 }
+	    cout << "\ndistinct_num: " << distinct_num << endl;
+	    cout << "=============================" << endl;
+
 	};
 
-	/*void sort() {
-	    std::sort(m_col.begin(), m_col.end(), CompareByMember<T>());
-	};*/
-
 	void print_max() {
-	    cout << name << ": max value is " << *m_set.rbegin() << endl;
 	}
-
-	int get_index(T& val) {
-	}
-
 	
-	set<T> m_set; //the real data of eliminating duplication
 	map<T, int> sdict;
+	typename map<T, int>::iterator it;
 	EncodedDict<T>* edict; // eliminate duplication, 
 	int record_num;
+	int col_num;
 	int distinct_num=0;
 	int bit_num;
 	string name;
