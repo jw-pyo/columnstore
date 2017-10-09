@@ -186,6 +186,7 @@ class EncodedDict {
 		    ret <<= 1;
 		    ret |= get_encodedbit8(contents_8, i*bit_num + k);
 		    }
+		    cout << "record " << i << ": " << (unsigned int)ret << endl; 
 		}
 		else if(bit_num <=16){
 		unsigned short ret = 0x0000;
@@ -193,6 +194,7 @@ class EncodedDict {
 		    ret <<= 1;
 		    ret |= get_encodedbit16(contents_16, i*bit_num + k);
 		    }
+		    cout << "record " << i << ": " << (unsigned int)ret << endl; 
 		}
 		else if(bit_num <=32){
 		unsigned int ret = 0x00000000;
@@ -200,8 +202,8 @@ class EncodedDict {
 		    ret <<= 1;
 		    ret |= get_encodedbit32(contents_32, i*bit_num + k);
 		    }
-		}
 		    cout << "record " << i << ": " << (unsigned int)ret << endl; 
+		}
 	    }
 	    
 	    }
@@ -213,6 +215,7 @@ class EncodedDict {
 		    ret <<=1;
 		    ret |= get_encodedbit8(contents_8, index*bit_num + k);
 		    }
+		    cout << "record " << index << ": " << (unsigned int)ret << endl;
 		}
 		else if(bit_num <=16) {
 		unsigned short ret = 0x0000;
@@ -220,15 +223,16 @@ class EncodedDict {
 		    ret <<=1;
 		    ret |= get_encodedbit16(contents_16, index*bit_num + k);
 		    }
+		    cout << "record " << index << ": " << (unsigned int)ret << endl;
 		}
 		else if(bit_num <=32) {
-		unsigned char int = 0x00000000;
+		unsigned int ret = 0x00000000;
 		for (int k=0; k<bit_num; k++) {
 		    ret <<=1;
 		    ret |= get_encodedbit32(contents_32, index*bit_num + k);
 		    }
-		}
 		    cout << "record " << index << ": " << (unsigned int)ret << endl;
+		}
 	    }
 
 	    else {
