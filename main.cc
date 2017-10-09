@@ -24,14 +24,16 @@ string sample_game_name[15] = {"data/sample-game.csv", "sample-game", "SID", "TS
 //DataArray_13<uint32_t, double, int, int, int, uint32_t, uint32_t, int, int, int, int, int, int>* sample_game = new DataArray_13<uint32_t, double, int, int, int, uint32_t, uint32_t, int, int, int, int, int, int>(sample_game_name, "data/sample-game.csv", 1048576);
 //put the dataarray into Table
 
-Table_3<uint32_t, uint32_t, uint32_t>* t_sensors = new Table_3<uint32_t, uint32_t, uint32_t>(entities_name, 21);
+Table_3<unsigned int, string, unsigned int>* t_sensors = new Table_3<unsigned int, string, unsigned int>(entities_name, 21);
 
 //delete t_sensors;
 //delete entities;
 //delete sample_game;
 
-t_sensors->col_2->print_info();
-t_sensors->col_2->edict->print_edict(-1);
+//t_sensors->col_2->print_info();
+//t_sensors->col_0->edict->print_edict(-1);
+t_sensors->col_1->edict->print_edict(-1);
+//t_sensors->col_2->edict->print_edict(-1);
 
 /*
 sample_game->col_1.print();

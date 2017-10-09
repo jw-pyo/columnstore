@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <stdlib.h>
 #include <math.h>
+#include <typeinfo>
 
 #include "EncodedDict.h"
 //#include "DataArray.h"
@@ -35,10 +36,11 @@ class Column {
 	    string line;
 	    int i = 0;
 	    while(getline(dataFile, line)){
-	    	string* line_arr = strSplit(line, ",");
-		push_back(convert_to<T>(line_arr[col_num]));
-	   	i++; 
+	    	string* line_arr = strSplit(line,",");
+		push_back(line_arr[col_num]);
+		i++; 
 	    }
+
 
 	    assert(i == record_num);
 
@@ -49,19 +51,20 @@ class Column {
 	~Column<T>()	{ 
 	    sdict.clear();
 	    delete edict;
-	    cout << "Column " << name << " is free from memory." << endl;
+	    cout << "Delete Column: " << name  << endl;
 	};
 
-	void	push_back(T val) {
+	void	push_back(string val) {
 	    if(sdict.count(val) > 0) {}
 	    else{
-		sdict.insert(pair<T, int>(val, distinct_num++));
+		sdict.insert(pair<string, int>(val, distinct_num++));
+	    	cout << "in sdict: " << val << "   " << (distinct_num - 1) << endl;
 	    }
 	};
 	void	make_edict(string* table_col_namelist_) {
-	    distinct_num = sdict.size();
-	    bit_num = (int)floor(log2((double)distinct_num)); //think about null value
-	    edict = new EncodedDict<T>(table_col_namelist_, sdict, col_num, bit_num, record_num);
+	    //distinct_num = sdict.size();
+	    bit_num = (int)ceil(log2(distinct_num)); //think about null value
+	    edict = new EncodedDict(table_col_namelist_, sdict, col_num, bit_num, record_num);
 	    //return edict;
 	    //edict.make_contents(raw_col);
 	    //edict.print_edict();
@@ -87,8 +90,8 @@ class Column {
 	
 	void	print_info() {
 	    cout << "=============================" << endl;
-	    cout << "'" << name << "' sdict is ... " << endl;
-	    for(typename map<T, int>::iterator itr = sdict.begin(); itr != sdict.end(); ++itr) {
+	    cout << "\'" << name << "\' sdict is ... " << endl;
+	    for(itr = sdict.begin(); itr != sdict.end(); ++itr) {
 		cout << "sdict[" << (*itr).first << "]: " << (*itr).second << endl;
 		 }
 	    cout << "\ndistinct_num: " << distinct_num << endl;
@@ -99,9 +102,9 @@ class Column {
 	void print_max() {
 	}
 	
-	map<T, int> sdict;
-	typename map<T, int>::iterator it;
-	EncodedDict<T>* edict; // eliminate duplication, 
+	map<string, int> sdict;
+	typename map<string, int>::iterator itr;
+	EncodedDict* edict; // eliminate duplication, 
 	int record_num;
 	int col_num;
 	int distinct_num=0;
