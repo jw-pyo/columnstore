@@ -31,7 +31,7 @@ class Column {
 	    name = table_col_namelist[col_num_ + 2];
 	    record_num = record_num_;
 	    col_num = col_num_;
-
+	    //data input
 	    ifstream dataFile(table_col_namelist[0]);
 	    string line;
 	    int i = 0;
@@ -41,9 +41,8 @@ class Column {
 		i++; 
 	    }
 
-
 	    assert(i == record_num);
-
+	   // make encoded dictionary
 	    make_edict(table_col_namelist);
 
 	};
@@ -55,30 +54,20 @@ class Column {
 	};
 
 	void	push_back(string val) {
+	    //it is used for making sorted dictionary.
 	    if(sdict.count(val) > 0) {}
 	    else{
 		sdict.insert(pair<string, int>(val, distinct_num++));
-	    	cout << "in sdict: " << val << "   " << (distinct_num - 1) << endl;
+	    //	cout << "in sdict: " << val << "   " << (distinct_num - 1) << endl;
 	    }
 	};
+
 	void	make_edict(string* table_col_namelist_) {
-	    //distinct_num = sdict.size();
+	    // it is used for making packed-encoded array
+	    //
 	    bit_num = (int)ceil(log2(distinct_num)); //think about null value
 	    edict = new EncodedDict(table_col_namelist_, sdict, col_num, bit_num, record_num);
-	    //return edict;
-	    //edict.make_contents(raw_col);
-	    //edict.print_edict();
 	}
-
-	/*void	allocate_sdict()  { //DEPRECATED
-	    sdict = (T*)malloc(distinct_num * sizeof(T));
-	    int i = 0;
-	    for(typename set<T>::iterator itr = m_set.begin(); itr != m_set.end(); ++itr) {
-		sdict[i] = *itr;
-		cout << sdict[i] << endl;
-		i++;
-	    }	
-	};*/
 	
 	/*void	print() {
 	    cout << name << " column:" << endl;

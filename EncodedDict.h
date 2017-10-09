@@ -17,57 +17,26 @@
 //#include "DataArray.h"
 
 using namespace std;
-/*void show(const void *object, size_t size)
-{
-       const unsigned char *byte;
-       for ( byte = object; size--; ++byte )
-	{
-	    unsigned char mask;
-	    for ( mask = 1 << (CHAR_BIT - 1); mask; mask >>= 1 )
-	    {
-		putchar(mask & *byte ? '1' : '0');
-	    }
-	    putchar(' ');
-	}
-	putchar('\n');
-}*/
 
 void shift_left_bit8(unsigned char* arr, int len, int bit){
-   // cout << "Before" << endl;
-   // cout << "" << endl;
 
     for(int i = 0; i < len - 1; i++){
 	arr[i] = (arr[i] << bit) | ((arr[i+1] >> (8 - bit)));
     }
     arr[len-1] = (arr[len-1] << bit) & 0xFF;
-   // cout << "After" << endl;
-   // cout << "" << endl;
 }
-
-
 void shift_left_bit16(uint16_t* arr, int len, int bit){
-    int i;
-   // cout << "Before" << endl;
-   // cout << "" << endl;
-
-    for(i = 0; i < len - 1; ++i){
-	arr[i] = (arr[i] << bit) | ((arr[i+1] >> (16 - bit)) & (uint16_t)(pow(2, 16-bit) - 1));
+    for(int i = 0; i < len - 1; i++){
+	arr[i] = (arr[i] << bit) | ((arr[i+1] >> (16 - bit)));
     }
-    arr[len-1] = arr[len-1] << bit;
-   // cout << "After" << endl;
-   // cout << "" << endl;
+    arr[len-1] = (arr[len-1] << bit) & 0xFFFF;
 }
 void shift_left_bit32(uint32_t* arr, int len, int bit){
-    int i;
-   // cout << "Before" << endl;
-   // cout << "" << endl;
 
-    for(i = 0; i < len - 1; ++i){
-	arr[i] = (arr[i] << bit) | ((arr[i+1] >> (32 - bit)) & (uint32_t)(pow(2, 32-bit) - 1));
+    for(int i = 0; i < len - 1; i++){
+	arr[i] = (arr[i] << bit) | ((arr[i+1] >> (32 - bit)));
     }
-    arr[len-1] = arr[len-1] << bit;
-   // cout << "After" << endl;
-   // cout << "" << endl;
+    arr[len-1] = (arr[len-1] << bit) & 0xFFFFFFFF;
 }
 
 //template<typename T>
@@ -88,7 +57,6 @@ class EncodedDict {
 	    if (bit_num <=8) {
 		block_num = (int)ceil((double)total_bit/8);
 		contents_8 = (unsigned char*)calloc(block_num, sizeof(unsigned char));
-		//temp = (unsigned char*)calloc(block_num, sizeof(unsigned char));
 		unit_bit = 8;
 		cout << "block_num: " << block_num << endl;
 	    }
@@ -96,8 +64,8 @@ class EncodedDict {
 	    else if (bit_num <=16) {
 		block_num = (int)ceil((double)total_bit/16);
 		contents_16 = (unsigned short*)calloc(block_num, sizeof(unsigned short));
-		//temp = (unsigned short*)calloc(block_num, sizeof(unsigned short));
 		unit_bit = 16;
+		cout << "block_num: " << block_num << endl;
 	    }
 
 	    else if (bit_num <=32) {
@@ -105,6 +73,7 @@ class EncodedDict {
 		contents_32 = (unsigned int*)calloc(block_num, sizeof(unsigned int));
 		//temp = (unsigned int*)calloc(block_num, sizeof(unsigned int));
 		unit_bit = 32;
+		cout << "block_num: " << block_num << endl;
 	    }
 	    
 	    else {
@@ -118,16 +87,9 @@ class EncodedDict {
 	    for(int i=0; i<record_num; i++) {
 		getline(dataFile, line);
 		string* line_arr = strSplit(line, ",");
-		//	PackedArray_set(contents, i, raw_col.value[i]);
 		shift_left_bit8(contents_8, block_num, bit_num);
-		//cout << convert_to<T>(line_arr[col_num])<< endl;
 		contents_8[block_num - 1] |= (unsigned char)sdict[(line_arr[col_num])];
-	    //for(int k=0; k < block_num; k++) {
-	//	cout << "contents[" << k << "] " << bitset<8>((unsigned int)contents_8[k]) << endl;
-	  //  	}
-	  //  }
 	    }
-	    //show(contents, (int)ceil(total_bit/8));
 	    for(int k=0; k < block_num; k++) {
 		cout << "contents[" << k << "] " << bitset<8>((unsigned char)contents_8[k]) << endl;
 	    	}
@@ -139,29 +101,24 @@ class EncodedDict {
 		string* line_arr = strSplit(line, ",");
 		shift_left_bit16(contents_16, block_num, bit_num);
 		contents_16[block_num - 1] |= (unsigned short)sdict[(line_arr[col_num])];
-		for(int j=0; j<block_num; j++)	
-		{
-		    cout <<  bitset<16>((unsigned int)contents_16[j]) << "   ";
-		}
-		cout << " " << endl;
 	    }
 	    for(int k=0; k < block_num; k++) {
 		cout << "contents[" << k << "] " << (unsigned int)contents_16[k] << endl;
 	    	}
 	    }
+	    
 	    else if(bit_num <= 32) {
 	    for(int i=0; i<record_num; i++) {
 		getline(dataFile, line);
 		string* line_arr = strSplit(line, ",");
 		shift_left_bit32(contents_32, block_num, bit_num);
 		contents_32[block_num - 1] |= (unsigned int)sdict[(line_arr[col_num])];
-		for(int j=0; j<block_num; j++)	
-		{
-		    cout <<  bitset<32>((unsigned int)contents_32[j]) << "   ";
-		}
-		cout << " " << endl;
+		//for(int j=0; j<block_num; j++)	
+		//{
+		//    cout <<  bitset<32>((unsigned int)contents_32[j]) << "   ";
+		//}
+		//cout << " " << endl;
 	    }
-	    //show(contents, (int)ceil(total_bit/8));
 	    for(int k=0; k < block_num; k++) {
 		cout << "contents[" << k << "] " << (unsigned int)contents_32[k] << endl;
 	    	}
@@ -171,25 +128,19 @@ class EncodedDict {
 		assert(1);
 	    }
 
-	    
-	    //free(temp);
 	    cout << "\nCreate Encoded Dictionary: " <<data_path[1] << "->" << data_path[2+col_num] << endl;
 	    cout << "**************************" << endl;
 	};
 	
 	~EncodedDict() {
 	
-	    free(contents_8);
+	    if(bit_num <=8) free(contents_8);
+	    else if(bit_num <=16) free(contents_16);
+	    else if(bit_num <=32) free(contents_32);
 	    cout << "\nDelete Encoded Dictionary: " << t_name  << "->" << c_name << endl;
 	};
 
-	/*void make_contents(DataColumn<T>* raw_col) {
-	    for(int i=0; i<raw_col->record_num; i++) {
-		bitset<bit_num*record_num> temp = hex(raw_col->value[i]);
-	        contents = (contents << bit_num) | temp;  
-	    }
-	}*/
-	unsigned char get_encodedbit(unsigned char* arr, int ind){
+	unsigned char get_encodedbit8(unsigned char* arr, int ind){
 	    int base = (bit_num * record_num - 1 ) % unit_bit; 
 	    int j = (int)ceil((double)(ind - base) / unit_bit);
 	    int container_base = unit_bit - ((ind - base) % unit_bit);
@@ -200,50 +151,92 @@ class EncodedDict {
 	    ret |= ((arr[j] >> container_base) & 0x01);
 	    return ret;
 	}
+	
+	unsigned short get_encodedbit16(unsigned short* arr, int ind){
+	    int base = (bit_num * record_num - 1 ) % unit_bit; 
+	    int j = (int)ceil((double)(ind - base) / unit_bit);
+	    int container_base = unit_bit - ((ind - base) % unit_bit);
+	    if(container_base == unit_bit) container_base = 0;
+	    //in arr[j], container_base-th index is the return value
 
+	    unsigned short ret = 0x0000;
+	    ret |= ((arr[j] >> container_base) & 0x0001);
+	    return ret;
+	}
+
+	unsigned int get_encodedbit32(unsigned int* arr, int ind){
+	    int base = (bit_num * record_num - 1 ) % unit_bit; 
+	    int j = (int)ceil((double)(ind - base) / unit_bit);
+	    int container_base = unit_bit - ((ind - base) % unit_bit);
+	    if(container_base == unit_bit) container_base = 0;
+	    //in arr[j], container_base-th index is the return value
+
+	    unsigned int ret = 0x00000000;
+	    ret |= ((arr[j] >> container_base) & 0x00000001);
+	    return ret;
+	}
 	void print_edict(int index=-1) {
 	    cout << "Encoded Dict: " << endl;
-	    
+	   
+	    if(index == -1) {
 	    for(int i=0; i<record_num; i++){
+		if(bit_num <=8){
 		unsigned char ret = 0x00;
 		for(int k = 0; k<bit_num; k++) {
 		    ret <<= 1;
-		    ret |= get_encodedbit(contents_8, i*bit_num + k);
+		    ret |= get_encodedbit8(contents_8, i*bit_num + k);
+		    }
+		}
+		else if(bit_num <=16){
+		unsigned short ret = 0x0000;
+		for(int k = 0; k<bit_num; k++) {
+		    ret <<= 1;
+		    ret |= get_encodedbit16(contents_16, i*bit_num + k);
+		    }
+		}
+		else if(bit_num <=32){
+		unsigned int ret = 0x00000000;
+		for(int k = 0; k<bit_num; k++) {
+		    ret <<= 1;
+		    ret |= get_encodedbit32(contents_32, i*bit_num + k);
+		    }
 		}
 		    cout << "record " << i << ": " << (unsigned int)ret << endl; 
 	    }
-	}
-
-	/*void print_edict(int index=-1) {
-	    cout << "Print Encoded Dictionary : " << t_name << "->" << c_name << endl; 
 	    
-	    if(index==-1){
-	    	for(int i=0; i < record_num ; i++){
-		    for(int j=0; j < block_num ; j++){
-		        
-			if((record_num - 1 - i)*bit_num  >= j*unit_bit && (record_num - 1 - i)*bit_num < (j + 1)*unit_bit) {
-			    int inner_index = (i*bit_num) % unit_bit;
-			    if (unit_bit <=8){
-			    	unsigned char ret = (contents_8[block_num - j] >> inner_index) & (unsigned char)(pow(2, (unit_bit - inner_index)) - 1);
-				if(inner_index + bit_num > unit_bit && j!=0){
-				    ret = ret | ((contents_8[block_num - j - 1] & (unsigned char)(pow(2, inner_index + bit_num - unit_bit) - 1)) << (unit_bit - inner_index));
-				}
-
-				cout << "index: " << i << " value: " << (unsigned short)ret << endl;
-				break;
-			    }
-			}
-		    
-		    }
-
-	    	}
 	    }
-	    // index is not -1
-	    for(int i=0; i<record_num; i++) {
 
+	    else if(index >=0 && index <record_num){
+		if(bit_num <=8) {
+		unsigned char ret = 0x00;
+		for (int k=0; k<bit_num; k++) {
+		    ret <<=1;
+		    ret |= get_encodedbit8(contents_8, index*bit_num + k);
+		    }
+		}
+		else if(bit_num <=16) {
+		unsigned short ret = 0x0000;
+		for (int k=0; k<bit_num; k++) {
+		    ret <<=1;
+		    ret |= get_encodedbit16(contents_16, index*bit_num + k);
+		    }
+		}
+		else if(bit_num <=32) {
+		unsigned char int = 0x00000000;
+		for (int k=0; k<bit_num; k++) {
+		    ret <<=1;
+		    ret |= get_encodedbit32(contents_32, index*bit_num + k);
+		    }
+		}
+		    cout << "record " << index << ": " << (unsigned int)ret << endl;
+	    }
+
+	    else {
+	    	cout << "The record number is not in the range. " << endl;
+		assert(false);
 	    }
 	}
-	*/
+
 	void get_record(){};
 
 
