@@ -18,26 +18,6 @@
 
 using namespace std;
 
-void shift_left_bit8(unsigned char* arr, int len, int bit){
-
-    for(int i = 0; i < len - 1; i++){
-	arr[i] = (arr[i] << bit) | ((arr[i+1] >> (8 - bit)));
-    }
-    arr[len-1] = (arr[len-1] << bit) & 0xFF;
-}
-void shift_left_bit16(uint16_t* arr, int len, int bit){
-    for(int i = 0; i < len - 1; i++){
-	arr[i] = (arr[i] << bit) | ((arr[i+1] >> (16 - bit)));
-    }
-    arr[len-1] = (arr[len-1] << bit) & 0xFFFF;
-}
-void shift_left_bit32(uint32_t* arr, int len, int bit){
-
-    for(int i = 0; i < len - 1; i++){
-	arr[i] = (arr[i] << bit) | ((arr[i+1] >> (32 - bit)));
-    }
-    arr[len-1] = (arr[len-1] << bit) & 0xFFFFFFFF;
-}
 
 //template<typename T>
 class EncodedDict {
@@ -87,8 +67,10 @@ class EncodedDict {
 	    for(int i=0; i<record_num; i++) {
 		getline(dataFile, line);
 		string* line_arr = strSplit(line, ",");
-		shift_left_bit8(contents_8, block_num, bit_num);
+		shift_left_bit8(contents_8, block_num, bit_num, i);
 		contents_8[block_num - 1] |= (unsigned char)sdict[(line_arr[col_num])];
+		if(i % 5000 == 0)
+		    cout << i << " records are loaded," << endl;
 	    }
 	    for(int k=0; k < block_num; k++) {
 		cout << "contents[" << k << "] " << bitset<8>((unsigned char)contents_8[k]) << endl;
@@ -140,6 +122,31 @@ class EncodedDict {
 	    cout << "\nDelete Encoded Dictionary: " << t_name  << "->" << c_name << endl;
 	};
 
+void shift_left_bit8(unsigned char* arr, int len, int shift, int input_rec_i){
+    if(input_rec_i==0) return;
+
+    int base = (bit_num * input_rec_i - 1 ) % unit_bit; 
+    int j = (len - 1) - (int)ceil((double)(bit_num*input_rec_i - 1 - base) / unit_bit);
+    if(j == 0) j = 1;
+
+    for(int i = j - 1; i < len - 1; i++){
+	arr[i] = (arr[i] << shift) | ((arr[i+1] >> (8 - shift)));
+    }
+    arr[len-1] = (arr[len-1] << shift) & 0xFF;
+}
+void shift_left_bit16(uint16_t* arr, int len, int bit){
+    for(int i = 0; i < len - 1; i++){
+	arr[i] = (arr[i] << bit) | ((arr[i+1] >> (16 - bit)));
+    }
+    arr[len-1] = (arr[len-1] << bit) & 0xFFFF;
+}
+void shift_left_bit32(uint32_t* arr, int len, int bit){
+
+    for(int i = 0; i < len - 1; i++){
+	arr[i] = (arr[i] << bit) | ((arr[i+1] >> (32 - bit)));
+    }
+    arr[len-1] = (arr[len-1] << bit) & 0xFFFFFFFF;
+}
 	unsigned char get_encodedbit8(unsigned char* arr, int ind){
 	    int base = (bit_num * record_num - 1 ) % unit_bit; 
 	    int j = (int)ceil((double)(ind - base) / unit_bit);

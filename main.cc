@@ -24,8 +24,8 @@ string sample_game_name[15] = {"data/sample-game.csv", "sample-game", "SID", "TS
 //DataArray_13<uint32_t, double, int, int, int, uint32_t, uint32_t, int, int, int, int, int, int>* sample_game = new DataArray_13<uint32_t, double, int, int, int, uint32_t, uint32_t, int, int, int, int, int, int>(sample_game_name, "data/sample-game.csv", 1048576);
 //put the dataarray into Table
 
-Table_3<unsigned int, unsigned int, unsigned int>* t_sensors = new Table_3<unsigned int, unsigned int, unsigned int>(sensors_name, 42);
-Table_3<unsigned int, string, unsigned int>* t_entities = new Table_3<unsigned int, string, unsigned int>(entities_name, 21);
+//Table_3<unsigned int, unsigned int, unsigned int>* t_sensors = new Table_3<unsigned int, unsigned int, unsigned int>(sensors_name, 42);
+//Table_3<unsigned int, string, unsigned int>* t_entities = new Table_3<unsigned int, string, unsigned int>(entities_name, 21);
 Table_13<unsigned int, double, int, int, int, unsigned int, unsigned int, int, int, int, int, int, int>* t_sample_game = new Table_13<unsigned int, double, int, int, int, unsigned int, unsigned int, int, int, int, int, int, int>(sample_game_name, 1048576);
 
 //delete t_sensors;
@@ -34,14 +34,14 @@ Table_13<unsigned int, double, int, int, int, unsigned int, unsigned int, int, i
 
 //t_sensors->col_2->print_info();
 //t_sensors->col_0->edict->print_edict(-1);
-t_sensors->col_1->edict->print_edict(-1);
-t_entities->col_1->edict->print_edict(-1);
+//t_sensors->col_1->edict->print_edict(-1);
+//t_entities->col_1->edict->print_edict(-1);
 t_sample_game->col_2->edict->print_edict(1000000);
 //t_sensors->col_2->edict->print_edict(-1);
 
 delete t_sample_game;
-delete t_sensors;
-delete t_entities;
+//delete t_sensors;
+//delete t_entities;
 
 /*
 sample_game->col_1.print();
