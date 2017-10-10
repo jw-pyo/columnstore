@@ -11,6 +11,9 @@
 #include <math.h>
 #include <bitset>
 #include <assert.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <unistd.h>
 
 #include "PackedArray.h"
 #include "util.h"
@@ -28,6 +31,9 @@ class EncodedDict {
 	    bit_num = bit_num_;
 	    record_num = record_num_;
 	    total_bit = bit_num * record_num;
+	    
+	    //PackedArray* a = PackedArray_create(bitsPerItem, count);
+
 	    // make sdict_array
 	    sdict_array = new string[sdict.size()];
 	    for(map<string, int>::iterator it=sdict.begin(); it!=sdict.end(); ++it){
@@ -74,9 +80,8 @@ class EncodedDict {
 		getline(dataFile, line);
 		string* line_arr = strSplit(line, ",");
 		//O(n)
-		shift_left_bit8(contents_8, block_num, bit_num, i);
+		shift_left_bit8(contents_8, block_num, bit_num, i, (unsigned char)sdict[(line_arr[col_num])]);
 		//O(logn)
-		contents_8[block_num - 1] |= (unsigned char)sdict[(line_arr[col_num])];
 		if(i % 5000 == 0)
 		    cout << i << " records are loaded," << endl;
 	    }
@@ -86,11 +91,12 @@ class EncodedDict {
 	    }
 
 	    else if(bit_num <= 16) {
-	    for(int i=1; i<=record_num; i++) {
+	    for(int i=0; i<record_num; i++) {
 		getline(dataFile, line);
 		string* line_arr = strSplit(line, ",");
-		shift_left_bit16(contents_16, block_num, bit_num);
-		contents_16[block_num - 1] |= (unsigned short)sdict[(line_arr[col_num])];
+		shift_left_bit16(contents_16, block_num, bit_num, i, (unsigned short)sdict[(line_arr[col_num])]);
+		if(i % 5000 == 0)
+		    cout << i << " records are loaded," << endl;
 	    }
 	    for(int k=0; k < block_num; k++) {
 	//	cout << "contents[" << k << "] " << (unsigned int)contents_16[k] << endl;
@@ -101,8 +107,7 @@ class EncodedDict {
 	    for(int i=0; i<record_num; i++) {
 		getline(dataFile, line);
 		string* line_arr = strSplit(line, ",");
-		shift_left_bit32(contents_32, block_num, bit_num);
-		contents_32[block_num - 1] |= (unsigned int)sdict[(line_arr[col_num])];
+		shift_left_bit32(contents_32, block_num, bit_num, i, (unsigned int)sdict[(line_arr[col_num])]);
 		//for(int j=0; j<block_num; j++)	
 		//{
 		//    cout <<  bitset<32>((unsigned int)contents_32[j]) << "   ";
@@ -131,9 +136,25 @@ class EncodedDict {
 	    cout << "\nDelete edict: " << t_name  << "->" << c_name << endl;
 	};
 
-	void shift_left_bit8(unsigned char* arr, int len, int shift, int input_rec_i){
-	    if(input_rec_i==0) return;
+	void shift_left_bit8(unsigned char* arr, int len, int shift, int rec_i, unsigned char val){
+	    
+	    int loc_start = rec_i * bit_num;
+	    int loc_end = rec_i * bit_num + (bit_num - 1);
+	    int i_start = loc_start % unit_bit;
+	    int i_end = loc_end % unit_bit;
+	    int j_start = loc_start/unit_bit;
+	    int j_end = loc_end/unit_bit;
+	    // if all bits are in same container
+	    if(j_start == j_end) {
+	        arr[j_start] |= (val << i_start);
+	    }
+	    else {
+	        arr[j_start] |= (val << i_start);
+		arr[j_end] |= (val >> (unit_bit - i_start));
+	    }
 
+	    /*
+	    if(input_rec_i==0) return;
 	    int base = (bit_num * input_rec_i - 1 ) % unit_bit; 
 	    int j = (len - 1) - (int)ceil((double)(bit_num*input_rec_i - 1 - base) / unit_bit);
 	    if(j == 0) j = 1;
@@ -141,26 +162,63 @@ class EncodedDict {
 	    for(int i = j - 1; i < len - 1; i++){
 		arr[i] = (arr[i] << shift) | ((arr[i+1] >> (8 - shift)));
 	    }
-	    arr[len-1] = (arr[len-1] << shift) & 0xFF;
+	    arr[len-1] = (arr[len-1] << shift) & 0xFF;*/
 	}
 
-	void shift_left_bit16(uint16_t* arr, int len, int bit){
-	    for(int i = 0; i < len - 1; i++){
-		arr[i] = (arr[i] << bit) | ((arr[i+1] >> (16 - bit)));
+	void shift_left_bit16(uint16_t* arr, int len, int bit, int rec_i, unsigned short val){
+	    int loc_start = rec_i * bit_num;
+	    int loc_end = rec_i * bit_num + (bit_num - 1);
+	    int i_start = loc_start % unit_bit;
+	    int i_end = loc_end % unit_bit;
+	    int j_start = loc_start/unit_bit;
+	    int j_end = loc_end/unit_bit;
+	    // if all bits are in same container
+	    if(j_start == j_end) {
+	        arr[j_start] |= (val << i_start);
 	    }
-	    arr[len-1] = (arr[len-1] << bit) & 0xFFFF;
+	    else {
+	        arr[j_start] |= (val << i_start);
+		arr[j_end] |= (val >> (unit_bit - i_start));
+	    }
 	}
 	
-	void shift_left_bit32(uint32_t* arr, int len, int bit){
+	void shift_left_bit32(uint32_t* arr, int len, int bit, int rec_i, unsigned int val){
 
-	    for(int i = 0; i < len - 1; i++){
-		arr[i] = (arr[i] << bit) | ((arr[i+1] >> (32 - bit)));
+	    int loc_start = rec_i * bit_num;
+	    int loc_end = rec_i * bit_num + (bit_num - 1);
+	    int i_start = loc_start % unit_bit;
+	    int i_end = loc_end % unit_bit;
+	    int j_start = loc_start/unit_bit;
+	    int j_end = loc_end/unit_bit;
+	    // if all bits are in same container
+	    if(j_start == j_end) {
+	        arr[j_start] |= (val << i_start);
 	    }
-	    arr[len-1] = (arr[len-1] << bit) & 0xFFFFFFFF;
+	    else {
+	        arr[j_start] |= (val << i_start);
+		arr[j_end] |= (val >> (unit_bit - i_start));
+	    }
 	}
 
 	unsigned char get_encodedbit8(unsigned char* arr, int ind){
-	    int base = (bit_num * record_num - 1 ) % unit_bit; 
+	    int loc_start = ind * bit_num;
+	    int loc_end = ind * bit_num + (bit_num - 1);
+	    int i_start = loc_start % unit_bit;
+	    int i_end = loc_end % unit_bit;
+	    int j_start = loc_start/unit_bit;
+	    int j_end = loc_end/unit_bit;
+	    unsigned char ret = 0x00; 
+	    if(j_start == j_end) {
+	        ret = (arr[j_start] >> i_start) & (unsigned char)((int)pow(2, bit_num) - 1);
+		return ret;
+	    }
+	    else {
+	        ret = (arr[j_start] >> i_start) & (unsigned char)((int)pow(2, bit_num - i_start) - 1);
+		ret |= (arr[j_end] & (unsigned char)((int)pow(2, i_end+1) - 1)) << (bit_num - unit_bit + i_start);
+		return ret;
+	    }
+
+	    /*int base = (bit_num * record_num - 1 ) % unit_bit; 
 	    int j = (int)ceil((double)(ind - base) / unit_bit);
 	    int container_base = unit_bit - ((ind - base) % unit_bit);
 	    if(container_base == unit_bit) container_base = 0;
@@ -168,19 +226,26 @@ class EncodedDict {
 
 	    unsigned char ret = 0x00;
 	    ret |= ((arr[j] >> container_base) & 0x01);
-	    return ret;
+	    return ret;*/
 	}
 	
 	unsigned short get_encodedbit16(unsigned short* arr, int ind){
-	    int base = (bit_num * record_num - 1 ) % unit_bit; 
-	    int j = (int)ceil((double)(ind - base) / unit_bit);
-	    int container_base = unit_bit - ((ind - base) % unit_bit);
-	    if(container_base == unit_bit) container_base = 0;
-	    //in arr[j], container_base-th index is the return value
-
-	    unsigned short ret = 0x0000;
-	    ret |= ((arr[j] >> container_base) & 0x0001);
-	    return ret;
+	    int loc_start = ind * bit_num;
+	    int loc_end = ind * bit_num + (bit_num - 1);
+	    int i_start = loc_start % unit_bit;
+	    int i_end = loc_end % unit_bit;
+	    int j_start = loc_start/unit_bit;
+	    int j_end = loc_end/unit_bit;
+	    unsigned short ret = 0x0000; 
+	    if(j_start == j_end) {
+	        ret = (arr[j_start] >> i_start) & (unsigned short)((int)pow(2, bit_num) - 1);
+		return ret;
+	    }
+	    else {
+	        ret = (arr[j_start] >> i_start) & (unsigned short)((int)pow(2, bit_num - i_start) - 1);
+		ret |= (arr[j_end] & (unsigned short)((int)pow(2, i_end+1) - 1)) << (bit_num - unit_bit + i_start);
+		return ret;
+	    }
 	}
 
 	unsigned int get_encodedbit32(unsigned int* arr, int ind){
@@ -205,11 +270,12 @@ class EncodedDict {
 	    if(index == -1) {
 	    for(int i=0; i<record_num; i++){
 		if(bit_num <=8){
-		unsigned char ret = 0x00;
-		for(int k = 0; k<bit_num; k++) {
+		unsigned char ret;
+		ret = get_encodedbit8(contents_8, i);
+		/*for(int k = 0; k<bit_num; k++) {
 		    ret <<= 1;
 		    ret |= get_encodedbit8(contents_8, i*bit_num + k);
-		    }
+		    }*/
 		    cout << "record " << i << ": " << decode((unsigned int)ret) << endl; 
 		}
 		else if(bit_num <=16){
@@ -234,20 +300,22 @@ class EncodedDict {
 
 	    else if(index >=0 && index <record_num){
 		if(bit_num <=8) {
-		unsigned char ret = 0x00;
-		for (int k=0; k<bit_num; k++) {
-		    ret <<=1;
-		    ret |= get_encodedbit8(contents_8, index*bit_num + k);
-		    }
-		    cout << "record " << index << ": " << (unsigned int)ret << endl;
+		unsigned char ret;
+		ret = get_encodedbit8(contents_8, index);
+		/*for(int k = 0; k<bit_num; k++) {
+		    ret <<= 1;
+		    ret |= get_encodedbit8(contents_8, i*bit_num + k);
+		    }*/
+		    cout << "record " << index << ": " << decode((unsigned int)ret) << endl; 
 		}
 		else if(bit_num <=16) {
-		unsigned short ret = 0x0000;
-		for (int k=0; k<bit_num; k++) {
-		    ret <<=1;
-		    ret |= get_encodedbit16(contents_16, index*bit_num + k);
-		    }
-		    cout << "record " << index << ": " << (unsigned int)ret << endl;
+		unsigned short ret;
+		ret = get_encodedbit16(contents_16, index);
+		/*for(int k = 0; k<bit_num; k++) {
+		    ret <<= 1;
+		    ret |= get_encodedbit8(contents_8, i*bit_num + k);
+		    }*/
+		    cout << "record " << index << ": " << decode((unsigned int)ret) << endl; 
 		}
 		else if(bit_num <=32) {
 		unsigned int ret = 0x00000000;
@@ -274,7 +342,56 @@ class EncodedDict {
 	  
 	}
 
-	void get_record(){};
+	string get_record(int index){
+	
+	    	string _ret;
+		if(bit_num <=8) {
+		struct rusage usage;
+		struct timeval start, end;
+		getrusage(RUSAGE_SELF, &usage);
+		start = usage.ru_utime;
+		unsigned char ret;
+		ret = get_encodedbit8(contents_8, index);
+	    	_ret = decode((unsigned int)ret);
+		getrusage(RUSAGE_SELF, &usage);
+		end = usage.ru_utime;
+		cout << "record[" << index << "] :" << _ret << endl;
+		cout << "Searching time: " << (end.tv_sec-start.tv_sec) + ((double)end.tv_usec - (double)start.tv_usec)/1000000.0 << endl;
+		return _ret; 
+		}
+		else if(bit_num <=16) {
+		struct rusage usage;
+		struct timeval start, end;
+		getrusage(RUSAGE_SELF, &usage);
+		start = usage.ru_utime;
+		unsigned short ret;
+		ret = get_encodedbit16(contents_16, index);
+	    	_ret = decode((unsigned int)ret);
+		getrusage(RUSAGE_SELF, &usage);
+		end = usage.ru_utime;
+		cout << "record[" << index << "] :" << _ret << endl;
+		cout << "Searching time: " << (end.tv_sec-start.tv_sec) + ((double)end.tv_usec - (double)start.tv_usec)/1000000.0 << endl;
+	    	return _ret; 
+		}
+		else if(bit_num <=32) {
+		struct rusage usage;
+		struct timeval start, end;
+		getrusage(RUSAGE_SELF, &usage);
+		start = usage.ru_utime;
+		unsigned int ret;
+		ret = get_encodedbit32(contents_32, index);
+	    	_ret = decode((unsigned int)ret);
+		getrusage(RUSAGE_SELF, &usage);
+		end = usage.ru_utime;
+		cout << "record[" << index << "] :" << _ret << endl;
+		cout << "Searching time: " << (end.tv_sec-start.tv_sec) + ((double)end.tv_usec - (double)start.tv_usec)/1000.0 << endl;
+	    	return _ret; 
+		}
+		else{
+		assert(1);
+		return _ret;
+		}
+	}
 
 
 	void* contents;	

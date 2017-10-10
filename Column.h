@@ -123,7 +123,24 @@ class Column {
 	    size_ += edict->get_size();
 	    return size_;
 	}
+
+	vector<int> equal(T val){
+	    ostringstream oss;
+	    oss << val;
+	    string val_ = oss.str();
+	    vector<int> ret;
+	    for(int i=0; i<record_num; i++)
+	    {
+		if(val_ == edict->get_record(i))
+		{
+		    ret.push_back(i);
+		}
+	    }
+	    
+	    return ret;
 	
+	}
+
 	map<string, int> sdict;
 	typename map<string, int>::iterator itr;
 	EncodedDict* edict; // eliminate duplication, 
