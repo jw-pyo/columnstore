@@ -3,17 +3,18 @@
 
 #include <iostream>
 #include <vector>
-#include <set>
 #include <map>
 #include <algorithm>
 #include <stdlib.h>
 #include <math.h>
 #include <typeinfo>
+#include <sstream>
 
 #include "EncodedDict.h"
-//#include "DataArray.h"
 
 using namespace std;
+
+
 
 template <typename U>
 struct CompareByMember {
@@ -27,7 +28,7 @@ struct CompareByMember {
 template <typename T>
 class Column {
     public:
-	Column<T>(string* table_col_namelist, int record_num_, int col_num_)	{
+	Column<T>(string* table_col_namelist, int record_num_, int col_num_, bool lossy=false)	{
 	    name = table_col_namelist[col_num_ + 2];
 	    record_num = record_num_;
 	    col_num = col_num_;
@@ -35,10 +36,35 @@ class Column {
 	    ifstream dataFile(table_col_namelist[0]);
 	    string line;
 	    int i = 0;
-	    while(getline(dataFile, line)){
+	    if(!lossy)
+	    {while(getline(dataFile, line)){
 	    	string* line_arr = strSplit(line,",");
 		push_back(line_arr[col_num]);
+	    i++; 
+	    }}
+	    else{
+	    
+	    while(getline(dataFile, line)){
+	    	string* line_arr = strSplit(line,",");
+		unsigned int sid = (unsigned int)atoi(line_arr[0].c_str());
+		int unit;
+		if (sid == 4 | sid == 8 | sid == 10 | sid == 12)
+		{
+		    unit = 50000000;
+		}
+		else
+		{
+		    unit = 500000000;
+		}
+
+		double push_value = ((int)floor(atoll(line_arr[col_num].c_str()) / unit)) * (double)unit;
+		ostringstream strs;
+		strs << push_value;
+		string a = strs.str();
+	    	push_back(a);
 		i++; 
+	    }
+	    
 	    }
 
 	    assert(i == record_num);
@@ -55,6 +81,7 @@ class Column {
 
 	void	push_back(string val) {
 	    //it is used for making sorted dictionary.
+	    
 	    if(sdict.count(val) > 0) {}
 	    else{
 		sdict.insert(pair<string, int>(val, distinct_num++));
@@ -77,7 +104,7 @@ class Column {
 		i++; }
 	};*/
 	
-	void	print_info() {
+	void	print_sdict() {
 	    cout << "=============================" << endl;
 	    cout << "\'" << name << "\' sdict is ... " << endl;
 	    for(itr = sdict.begin(); itr != sdict.end(); ++itr) {
@@ -89,6 +116,12 @@ class Column {
 	};
 
 	void print_max() {
+	}
+
+	int get_size(){
+	    int size_ = sizeof(sdict) + sizeof(int)*4 + name.size();
+	    size_ += edict->get_size();
+	    return size_;
 	}
 	
 	map<string, int> sdict;
