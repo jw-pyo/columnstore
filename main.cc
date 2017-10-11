@@ -27,27 +27,31 @@ getrusage(RUSAGE_SELF, &usage);
 end = usage.ru_utime;
 cout << "StartTime to load sample table: " << start.tv_sec << "." << start.tv_usec << endl;
 cout << "EndTime to load sample table: " << end.tv_sec << "." << end.tv_usec << endl;
-cout << "Use memory: " << usage.ru_maxrss/(1024*1024) << " Mbytes" <<  endl;
-//t_sensors->col_2->print_sdict();
-//t_sensors->col_1->edict->print_edict(-1);
-//t_entities->col_1->edict->print_edict(-1);
-t_sample_game->col_0->edict->print_edict(1048575);
-t_sample_game->col_0->edict->print_edict(1);
-t_sample_game->col_0->edict->print_edict(2);
-t_sample_game->col_0->edict->print_edict(3);
-t_sample_game->col_0->edict->print_edict(4);
-t_sample_game->col_1->edict->print_edict(0);
-t_sample_game->col_1->edict->print_edict(10);
-t_sample_game->col_1->edict->print_edict(20);
-t_sample_game->col_1->edict->print_edict(100);
-t_sample_game->col_1->edict->print_edict(200);
-//t_sample_game->col_1->edict->get_record(100000);
-//t_sample_game->col_1->edict->get_record(150000);
-//t_sample_game->col_1->edict->get_record(200000);
-//t_sample_game->col_1->edict->get_record(220001);
-//t_sample_game->col_1->edict->get_record(300004);
-//t_sample_game->col_2->edict->print_edict(2);
-//t_sample_game->col_3->edict->print_edict(3);
+cout << "Use memory with table load: " << usage.ru_maxrss/(1024*1024) << " Mbytes" <<  endl;
+
+
+
+
+t_sample_game->col_0->edict->get_record(0);
+t_sample_game->col_1->edict->get_record(1);
+t_sample_game->col_2->edict->get_record(2);
+t_sample_game->col_3->edict->get_record(3);
+t_sample_game->col_4->edict->get_record(4);
+t_sample_game->col_5->edict->get_record(5);
+t_sample_game->col_6->edict->get_record(6);
+t_sample_game->col_7->edict->get_record(7);
+t_sample_game->col_8->edict->get_record(8);
+t_sample_game->col_9->edict->get_record(9);
+t_sample_game->col_1->edict->get_record(10);
+t_sample_game->col_1->edict->get_record(11);
+t_sample_game->col_1->edict->get_record(12);
+t_sample_game->col_1->edict->get_record(13);
+t_sample_game->col_1->edict->get_record(14);
+t_sample_game->col_1->edict->get_record(15);
+t_sample_game->col_1->edict->get_record(16);
+t_sample_game->col_1->edict->get_record(17);
+t_sample_game->col_1->edict->get_record(18);
+t_sample_game->col_1->edict->get_record(19);
 //t_sensors->col_2->edict->print_edict(-1);
 //select('*', t_sample_game->col_0->equal(40), t_sample_game);
 

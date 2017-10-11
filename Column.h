@@ -47,20 +47,21 @@ class Column {
 	    while(getline(dataFile, line)){
 	    	string* line_arr = strSplit(line,",");
 		unsigned int sid = (unsigned int)atoi(line_arr[0].c_str());
-		int unit;
+		double unit;
 		if (sid == 4 | sid == 8 | sid == 10 | sid == 12)
-		{
-		    unit = 50000000;
-		}
-		else
 		{
 		    unit = 500000000;
 		}
+		else
+		{
+		    unit = 5000000000;
+		}
 
-		double push_value = ((int)floor(atoll(line_arr[col_num].c_str()) / unit)) * (double)unit;
+		double push_value = (floor(atoll(line_arr[col_num].c_str()) / unit)) * unit;
 		ostringstream strs;
 		strs << push_value;
 		string a = strs.str();
+		//cout << a << endl;
 	    	push_back(a);
 		i++; 
 	    }

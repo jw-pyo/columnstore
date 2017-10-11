@@ -14,6 +14,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <unistd.h>
+#include <iomanip> //for setprecision
 
 #include "PackedArray.h"
 #include "util.h"
@@ -82,12 +83,12 @@ class EncodedDict {
 		//O(n)
 		shift_left_bit8(contents_8, block_num, bit_num, i, (unsigned char)sdict[(line_arr[col_num])]);
 		//O(logn)
-		if(i % 5000 == 0)
-		    cout << i << " records are loaded," << endl;
+	//	if(i % 5000 == 0)
+	//	    cout << i << " records are loaded," << endl;
 	    }
-	    for(int k=0; k < block_num; k++) {
+	//    for(int k=0; k < block_num; k++) {
 	//	cout << "contents[" << k << "] " << bitset<8>((unsigned char)contents_8[k]) << endl;
-	    	}
+	//    	}
 	    }
 
 	    else if(bit_num <= 16) {
@@ -95,12 +96,12 @@ class EncodedDict {
 		getline(dataFile, line);
 		string* line_arr = strSplit(line, ",");
 		shift_left_bit16(contents_16, block_num, bit_num, i, (unsigned short)sdict[(line_arr[col_num])]);
-		if(i % 5000 == 0)
-		    cout << i << " records are loaded," << endl;
+	//	if(i % 5000 == 0)
+	//	    cout << i << " records are loaded," << endl;
 	    }
-	    for(int k=0; k < block_num; k++) {
+	//    for(int k=0; k < block_num; k++) {
 	//	cout << "contents[" << k << "] " << (unsigned int)contents_16[k] << endl;
-	    	}
+	//    	}
 	    }
 	    
 	    else if(bit_num <= 32) {
@@ -108,15 +109,10 @@ class EncodedDict {
 		getline(dataFile, line);
 		string* line_arr = strSplit(line, ",");
 		shift_left_bit32(contents_32, block_num, bit_num, i, (unsigned int)sdict[(line_arr[col_num])]);
-		//for(int j=0; j<block_num; j++)	
-		//{
-		//    cout <<  bitset<32>((unsigned int)contents_32[j]) << "   ";
-		//}
-		//cout << " " << endl;
 	    }
-	    for(int k=0; k < block_num; k++) {
+	//    for(int k=0; k < block_num; k++) {
 	//	cout << "contents[" << k << "] " << (unsigned int)contents_32[k] << endl;
-	    	}
+	//    	}
 	    }
 	    else{
 	    	cout << "This type is not supported." << endl;
@@ -355,7 +351,7 @@ class EncodedDict {
 	    	_ret = decode((unsigned int)ret);
 		getrusage(RUSAGE_SELF, &usage);
 		end = usage.ru_utime;
-		cout << "record[" << index << "] :" << _ret << endl;
+		cout << "record[" << index << "] :" << setprecision (17) << _ret << endl;
 		cout << "Searching time: " << (end.tv_sec-start.tv_sec) + ((double)end.tv_usec - (double)start.tv_usec)/1000000.0 << endl;
 		return _ret; 
 		}
@@ -369,7 +365,7 @@ class EncodedDict {
 	    	_ret = decode((unsigned int)ret);
 		getrusage(RUSAGE_SELF, &usage);
 		end = usage.ru_utime;
-		cout << "record[" << index << "] :" << _ret << endl;
+		cout << "record[" << index << "] :" << setprecision (17) << _ret << endl;
 		cout << "Searching time: " << (end.tv_sec-start.tv_sec) + ((double)end.tv_usec - (double)start.tv_usec)/1000000.0 << endl;
 	    	return _ret; 
 		}
@@ -383,7 +379,7 @@ class EncodedDict {
 	    	_ret = decode((unsigned int)ret);
 		getrusage(RUSAGE_SELF, &usage);
 		end = usage.ru_utime;
-		cout << "record[" << index << "] :" << _ret << endl;
+		cout << "record[" << index << "] : " << setprecision (17) << _ret << endl;
 		cout << "Searching time: " << (end.tv_sec-start.tv_sec) + ((double)end.tv_usec - (double)start.tv_usec)/1000.0 << endl;
 	    	return _ret; 
 		}
