@@ -47,7 +47,7 @@ class Column {
 	    while(getline(dataFile, line)){
 	    	string* line_arr = strSplit(line,",");
 		unsigned int sid = (unsigned int)atoi(line_arr[0].c_str());
-		double unit;
+		unsigned long long unit;
 		if (sid == 4 | sid == 8 | sid == 10 | sid == 12)
 		{
 		    unit = 500000000;
@@ -57,7 +57,7 @@ class Column {
 		    unit = 5000000000;
 		}
 
-		double push_value = (floor(atoll(line_arr[col_num].c_str()) / unit)) * unit;
+		unsigned long long push_value = atoll(line_arr[col_num].c_str()) - (atoll(line_arr[col_num].c_str()) % unit);
 		ostringstream strs;
 		strs << push_value;
 		string a = strs.str();
@@ -125,7 +125,7 @@ class Column {
 	    return size_;
 	}
 
-	vector<int> equal(T val){
+	/*vector<int> equal(T val){
 	    ostringstream oss;
 	    oss << val;
 	    string val_ = oss.str();
@@ -140,7 +140,7 @@ class Column {
 	    
 	    return ret;
 	
-	}
+	}*/
 
 	map<string, int> sdict;
 	typename map<string, int>::iterator itr;

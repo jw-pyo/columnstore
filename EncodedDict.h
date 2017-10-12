@@ -245,25 +245,34 @@ class EncodedDict {
 	}
 
 	unsigned int get_encodedbit32(unsigned int* arr, int ind){
-	    int base = (bit_num * record_num - 1 ) % unit_bit; 
-	    int j = (int)ceil((double)(ind - base) / unit_bit);
-	    int container_base = unit_bit - ((ind - base) % unit_bit);
-	    if(container_base == unit_bit) container_base = 0;
-	    //in arr[j], container_base-th index is the return value
-
-	    unsigned int ret = 0x00000000;
-	    ret |= ((arr[j] >> container_base) & 0x00000001);
-	    return ret;
+	    int loc_start = ind * bit_num;
+	    int loc_end = ind * bit_num + (bit_num - 1);
+	    int i_start = loc_start % unit_bit;
+	    int i_end = loc_end % unit_bit;
+	    int j_start = loc_start/unit_bit;
+	    int j_end = loc_end/unit_bit;
+	    unsigned int ret = 0x00000000; 
+	    if(j_start == j_end) {
+	        ret = (arr[j_start] >> i_start) & (unsigned int)((int)pow(2, bit_num) - 1);
+		return ret;
+	    }
+	    else {
+	        ret = (arr[j_start] >> i_start) & (unsigned int)((int)pow(2, bit_num - i_start) - 1);
+		ret |= (arr[j_end] & (unsigned int)((int)pow(2, i_end+1) - 1)) << (bit_num - unit_bit + i_start);
+		return ret;
+	    }
 	}
 
 	string decode(unsigned int ret) {
 	//use binary search
 	return sdict_array[ret];	
 	}
-	void print_edict(int index=-1) {
-	    cout << "Print edict: " << t_name << "->" << c_name << endl;
+
+
+	void print_record(int from, int to, bool isAll) {
+	    cout << "Print Record: " << t_name << "->" << c_name << endl;
 	   
-	    if(index == -1) {
+	    if(isAll) {
 	    for(int i=0; i<record_num; i++){
 		if(bit_num <=8){
 		unsigned char ret;
@@ -276,50 +285,65 @@ class EncodedDict {
 		}
 		else if(bit_num <=16){
 		unsigned short ret = 0x0000;
-		for(int k = 0; k<bit_num; k++) {
-		    ret <<= 1;
-		    ret |= get_encodedbit16(contents_16, i*bit_num + k);
-		    }
-		    cout << "record " << i << ": " << (unsigned int)ret << endl; 
+		ret = get_encodedbit16(contents_16, i);
+		    
+		    cout << "record " << i << ": " << decode((unsigned int)ret) << endl; 
 		}
 		else if(bit_num <=32){
 		unsigned int ret = 0x00000000;
-		for(int k = 0; k<bit_num; k++) {
-		    ret <<= 1;
-		    ret |= get_encodedbit32(contents_32, i*bit_num + k);
-		    }
-		    cout << "record " << i << ": " << (unsigned int)ret << endl; 
+		ret = get_encodedbit32(contents_32, i);
+		cout << "record " << i << ": " << (unsigned int)ret << endl; 
 		}
 	    }
 	    
 	    }
 
-	    else if(index >=0 && index <record_num){
+	    else if(!isAll){
+		for(int index=from; index<to; index++){
 		if(bit_num <=8) {
+		struct rusage usage;
+		struct timeval start, end;
+		getrusage(RUSAGE_SELF, &usage);
+		start = usage.ru_utime;
 		unsigned char ret;
 		ret = get_encodedbit8(contents_8, index);
 		/*for(int k = 0; k<bit_num; k++) {
 		    ret <<= 1;
 		    ret |= get_encodedbit8(contents_8, i*bit_num + k);
 		    }*/
-		    cout << "record " << index << ": " << decode((unsigned int)ret) << endl; 
+		getrusage(RUSAGE_SELF, &usage);
+		end = usage.ru_utime;
+		cout << "record [" << index << "]: " << decode((unsigned int)ret) << endl; 
+		cout << "Searching time: " << (end.tv_sec-start.tv_sec) + ((double)end.tv_usec - (double)start.tv_usec)/1000000.0 << endl;
 		}
 		else if(bit_num <=16) {
+		struct rusage usage;
+		struct timeval start, end;
+		getrusage(RUSAGE_SELF, &usage);
+		start = usage.ru_utime;
 		unsigned short ret;
 		ret = get_encodedbit16(contents_16, index);
 		/*for(int k = 0; k<bit_num; k++) {
 		    ret <<= 1;
 		    ret |= get_encodedbit8(contents_8, i*bit_num + k);
 		    }*/
-		    cout << "record " << index << ": " << decode((unsigned int)ret) << endl; 
+		getrusage(RUSAGE_SELF, &usage);
+		end = usage.ru_utime;
+		cout << "record [" << index << "]: " << decode((unsigned int)ret) << endl; 
+		cout << "Searching time: " << (end.tv_sec-start.tv_sec) + ((double)end.tv_usec - (double)start.tv_usec)/1000000.0 << endl;
 		}
 		else if(bit_num <=32) {
-		unsigned int ret = 0x00000000;
-		for (int k=0; k<bit_num; k++) {
-		    ret <<=1;
-		    ret |= get_encodedbit32(contents_32, index*bit_num + k);
-		    }
-		    cout << "record " << index << ": " << (unsigned int)ret << endl;
+		struct rusage usage;
+		struct timeval start, end;
+		getrusage(RUSAGE_SELF, &usage);
+		start = usage.ru_utime;
+		unsigned int ret;
+		ret = get_encodedbit32(contents_32, index);
+		getrusage(RUSAGE_SELF, &usage);
+		end = usage.ru_utime;
+		cout << "record [" << index << "]: " << decode((unsigned int)ret) << endl;
+		cout << "Searching time: " << (end.tv_sec-start.tv_sec) + ((double)end.tv_usec - (double)start.tv_usec)/1000.0 << endl;
+		}
 		}
 	    }
 
@@ -342,51 +366,24 @@ class EncodedDict {
 	
 	    	string _ret;
 		if(bit_num <=8) {
-		struct rusage usage;
-		struct timeval start, end;
-		getrusage(RUSAGE_SELF, &usage);
-		start = usage.ru_utime;
 		unsigned char ret;
 		ret = get_encodedbit8(contents_8, index);
-	    	_ret = decode((unsigned int)ret);
-		getrusage(RUSAGE_SELF, &usage);
-		end = usage.ru_utime;
-		cout << "record[" << index << "] :" << setprecision (17) << _ret << endl;
-		cout << "Searching time: " << (end.tv_sec-start.tv_sec) + ((double)end.tv_usec - (double)start.tv_usec)/1000000.0 << endl;
-		return _ret; 
+		_ret = decode((unsigned int)ret);
 		}
 		else if(bit_num <=16) {
-		struct rusage usage;
-		struct timeval start, end;
-		getrusage(RUSAGE_SELF, &usage);
-		start = usage.ru_utime;
 		unsigned short ret;
 		ret = get_encodedbit16(contents_16, index);
 	    	_ret = decode((unsigned int)ret);
-		getrusage(RUSAGE_SELF, &usage);
-		end = usage.ru_utime;
-		cout << "record[" << index << "] :" << setprecision (17) << _ret << endl;
-		cout << "Searching time: " << (end.tv_sec-start.tv_sec) + ((double)end.tv_usec - (double)start.tv_usec)/1000000.0 << endl;
-	    	return _ret; 
 		}
 		else if(bit_num <=32) {
-		struct rusage usage;
-		struct timeval start, end;
-		getrusage(RUSAGE_SELF, &usage);
-		start = usage.ru_utime;
 		unsigned int ret;
 		ret = get_encodedbit32(contents_32, index);
-	    	_ret = decode((unsigned int)ret);
-		getrusage(RUSAGE_SELF, &usage);
-		end = usage.ru_utime;
-		cout << "record[" << index << "] : " << setprecision (17) << _ret << endl;
-		cout << "Searching time: " << (end.tv_sec-start.tv_sec) + ((double)end.tv_usec - (double)start.tv_usec)/1000.0 << endl;
-	    	return _ret; 
+	    	_ret = decode(ret);
 		}
 		else{
 		assert(1);
-		return _ret;
 		}
+		return _ret;
 	}
 
 
@@ -396,7 +393,6 @@ class EncodedDict {
 	unsigned int* contents_32;
 	//PackedArray* contents;
 	
-	private:
 	string* sdict_array;
 	int col_num; // the i-th column of table
 	int bit_num; // the number of bits that encoded value 
