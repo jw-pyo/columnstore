@@ -23,7 +23,7 @@ Table::Table(string* table_info)  {
     //input data
     ifstream dataFile(table_info[0]);
     string line;
-    //make set(unique, sorted)
+    //make set(unique, sorted) : 1 read
     for(int i=0; getline(line, dataFile), i++){
         string* records = strSplit(line, ",");
         for(int j=0; j<col_num; j++){
@@ -34,7 +34,7 @@ Table::Table(string* table_info)  {
     for(int j=0; j<col_num; j++){
         column[j]->make_dict();
     }
-    //make packed array
+    //make packed array : 2 read
     for(int i=0; getline(line, dataFile), i++){
         string* records = strSplit(line, ",");
         for(int j=0; j<col_num; j++){
@@ -57,6 +57,12 @@ Table::~Table() {
 
 };
 
+void Table::getRecord(int index) {
+    for(int j=0; j<col_num-1; i++) {
+	cout<< column[j]->getValue(index) << "|" ;
+    }
+    cout << column[col_num - 1]->getValue(index) << endl;
+}
 
 void Table::getMemSize() {};
 

@@ -16,17 +16,10 @@ using namespace std;
 class Table {
 
     public:
-       Table (string* table_info, int record_num_) {};
-
-       ~Table () {
-    	    delete col_0;
-	    delete col_1;
-	    delete col_2;
-	    cout << "Destructor Column: " << name << endl;
-
-       };
-
-       void getMemSize() {}
+       Table (string* table_info, int record_num_);
+       ~Table ();
+       void getRecord(int index);
+       void getMemSize();
 
     Column** column;
     vector<string> column_name;
