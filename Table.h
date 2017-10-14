@@ -13,30 +13,12 @@
 using namespace std;
 
 // for sensors.csv, entities.csv
-template<typename T_1, typename T_2, typename T_3>
-class Table_3 {
+class Table {
 
     public:
-       Table_3<T_1, T_2, T_3> (string* table_col_namelist, int record_num_) {
-	    name = table_col_namelist[1];
-	    record_num = record_num_;
-	    col_0 = new Column<T_1>(table_col_namelist, record_num, 0);
-	    col_1 = new Column<T_2>(table_col_namelist, record_num, 1);
-	    col_2 = new Column<T_3>(table_col_namelist, record_num, 2);
+       Table (string* table_info, int record_num_) {};
 
-	    /*for(int i=0; i<record_num; i++)
-	    {
-		String* 
-		col_0.push_back()
-		col_1.push_back()
-		col_2.push_back()
-	    }*/
-
-	        
-	    cout << "Create Table: " << name << endl;
-        };
-
-       ~Table_3<T_1, T_2, T_3> () {
+       ~Table () {
     	    delete col_0;
 	    delete col_1;
 	    delete col_2;
@@ -44,18 +26,13 @@ class Table_3 {
 
        };
 
-       /*void print_size() {
-	   int size_ = col_0->get_size() + col_1->get_size() + col_2->get_size();
-	   size_ += sizeof(name) + sizeof(int);
-	   cout << "Size of " << name << ": " << size_ << " bytes" << endl;
-       }*/
+       void getMemSize() {}
 
-    Column<T_1>* col_0;
-    Column<T_2>* col_1;
-    Column<T_3>* col_2;
-    string name;
+    Column** column;
+    vector<string> column_name;
+    vector<string> column_type;
+    string t_name;
     int record_num;
-   // vector<typename> column_type;
 
 };
 
@@ -123,7 +100,7 @@ class Table_13 {
 	  col_12->edict->get_record(index) << endl;
       
       
-      }
+      };
       void sid_40(){
        cout << "SID = 40, rowcount and top 20 rows " << endl;
        cout << "================================== " << endl;
@@ -135,7 +112,7 @@ class Table_13 {
 	    if (encoded == enc)
 	    {
 		index_set.push_back(i);
-		if(index_set.size() ==0)
+		if(index_set.size() <20)
 		{
 		   get_row(i);
 	    }
@@ -145,7 +122,7 @@ class Table_13 {
        cout << "================================== " << endl;
 	index_set.clear();
        
-    }
+    };
       void v_less_5000000(){
        cout << "V < 5,000,000, rowcount and top 20 rows " << endl;
        cout << "================================== " << endl;
@@ -153,20 +130,20 @@ class Table_13 {
        unsigned int encoded = (unsigned int)col_5->sdict["5000000"];
        for(int i=0; i < record_num; i++)
        	{
-	    unsigned int enc = (unsigned int)col_5->edict->get_encodedbit32(col_0->edict->contents_32, i);
+	    unsigned int enc = (unsigned int)col_5->edict->get_encodedbit32(col_5->edict->contents_32, i);
 	    if (enc < encoded)
 	    {
 		index_set.push_back(i);
-		if(index_set.size() == 0)
-		{
-		    get_row(i);
-	    }
+		//if(index_set.size() == 0)
+		//{
+		//    get_row(i);
+	    //}
 	    }
 	}
         cout << "rowcount: " << index_set.size() << endl;
        cout << "================================== " << endl;
        
-    }
+    };
 
     Column<T1>* col_0;
     Column<T2>* col_1;
