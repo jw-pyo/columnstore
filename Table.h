@@ -5,8 +5,11 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <vector>
-
+#include <iostream>
+#include <fstream>
+#include <string>
 #include <boost/variant.hpp>
+
 #include "util.h"
 #include "Column.h"
 
@@ -21,14 +24,16 @@ class Table {
        void getRecord(int index);
        void getMemSize();
 
-    Column** column;
+    //Column** column;
+    vector<Column*> column;
     vector<string> column_name;
     vector<string> column_type;
     string t_name;
     int record_num;
+    int col_num;
 
 };
-
+/*
 template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10, typename T11, typename T12, typename T13>
 class Table_13 {
     public:
@@ -154,5 +159,5 @@ class Table_13 {
     string name;
     int record_num;
 };
-
+*/
 #endif

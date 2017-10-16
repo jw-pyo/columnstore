@@ -1,12 +1,13 @@
-#include "Table.h"
-#include "util.h"
-#include "PackedArray.h"
+#ifndef _MAIN_CC_
+#define _MAIN_CC_
 
 #include <iostream>
 #include <stdlib.h>
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <unistd.h>
+
+#include "Table.h"
 using namespace std;
 
 int main(){
@@ -22,13 +23,13 @@ string sample_game_name[28] = {"data/sample-game.csv", "sample-game", "SID", "un
 //Table_3<unsigned int, string, unsigned int>* t_entities = new Table_3<unsigned int, string, unsigned int>(entities_name, 21);
 getrusage(RUSAGE_SELF, &usage);
 start = usage.ru_utime;
-Table* t_sensors_name = new Table(sensors_name, 42);
+Table* t_sensors = new Table(sensors_name, 42);
 getrusage(RUSAGE_SELF, &usage);
 end = usage.ru_utime;
 cout << "StartTime to load sample table: " << start.tv_sec << "." << start.tv_usec << endl;
 cout << "EndTime to load sample table: " << end.tv_sec << "." << end.tv_usec << endl;
 cout << "Use memory with table load: " << usage.ru_maxrss/(1024*1024) << " Mbytes" <<  endl;
-t_sensors.name->getValue(5);
+t_sensors->getRecord(5);
 /*
 t_sample_game->col_0->edict->get_record(0);
 t_sample_game->col_1->edict->get_record(1);
@@ -51,10 +52,10 @@ t_sample_game->col_1->edict->get_record(17);
 t_sample_game->col_1->edict->get_record(18);
 t_sample_game->col_1->edict->get_record(19);
 */
-t_sample_game->col_1->edict->print_record(500000,505000,false);
-t_sample_game->col_4->edict->print_record(500000,505000,false);
-t_sample_game->col_5->edict->print_record(500000,505000,false);
-t_sample_game->col_6->edict->print_record(500000,505000,false);
+//t_sample_game->col_1->edict->print_record(500000,505000,false);
+//t_sample_game->col_4->edict->print_record(500000,505000,false);
+//t_sample_game->col_5->edict->print_record(500000,505000,false);
+//t_sample_game->col_6->edict->print_record(500000,505000,false);
 //t_sample_game->sid_40();
 //t_sample_game->v_less_5000000();
 //t_sample_game->col_1->edict->print_record(10,20, false);
@@ -63,12 +64,14 @@ t_sample_game->col_6->edict->print_record(500000,505000,false);
 //delete t_sample_game;
 
 
-//delete t_sensors;
+delete t_sensors;
 //delete t_entities;
-delete t_sample_game;
+//delete t_sample_game;
 
 //getrusage(RUSAGE_SELF, &usage);
 //cout << "Use memory after deleting: " << usage.ru_maxrss/(1024*1024) << " Mbytes" <<  endl;
 
 return 0;
 }
+
+#endif

@@ -9,13 +9,8 @@
 #include <math.h>
 #include <typeinfo>
 #include <sstream>
-
-#include "EncodedDict.h"
-
-typedef boost::bimap<bimaps::multiset_of<string>, bimaps::set_of<int>> bimap_t;
-typedef bimap_t::value_type value_type;
-
-
+#include <boost/bimap.hpp>
+#include "PackedArray.h"
 using namespace std;
 
 
@@ -29,21 +24,21 @@ struct CompareByMember {
 		}
 	};
 
-template <typename T>
+//template <typename T>
 class Column {
     public:
-	Column(string* table_info, int col_num_, bool lossy=false) {
+	Column(string column_name_, string column_type_, int record_num_, bool lossy=false) {
 	    
 	//assume data are all in.
         //set_dict is already made.
-        data_arr = PackedArray_create(bit, record_num);
+        record_num = record_num_;
 	};
 
-	~Column<T>() { 
+	~Column() { 
 	    set_dict.clear();
 	    dict.clear();
 	    PackedArray_destroy(data_arr);
-	    cout << "Delete Column: " << name  << endl;
+	    cout << "Delete Column: " << column_name  << endl;
 	};
     
     void    push_setdict(string val) {
@@ -53,26 +48,40 @@ class Column {
     void    make_dict(){
         int i=0;
         for(set<string>::iterator it=set_dict.begin(); it!=set_dict.end(); it++){
-            dict.insert(value_type((*it), i++));
+            dict.insert({(*it), i++});
         }
     }
 
+    void    setDistinct(){
+        distinct_num = dict.size();
+    }
+   
+    void    make_arr(){
+        int bit = (int)ceil(log2(distinct_num));
+        data_arr = PackedArray_create(bit, record_num);
+    }
+
+
     void    fill_arr(int index, string val){
-        for(int i=0; i<record_num; i++){
-            PackedArray_set(data_arr, index, dict[val]);
-            }
+            PackedArray_set(data_arr, index, dict.left.at(val));
         }
     string  getValue(int index){
     	uint32_t ret;
-    	PackedArray_get(data_arr, index, &ret);
-	return dict.right.at(ret);
+    	ret = PackedArray_get(data_arr, index);
+	    return dict.right.at((int)ret);
 	}
 	
+    typedef boost::bimap<string, int> bimap_t;
+    //typedef bimap_t::value_type value_type;
     bimap_t dict;
     set<string> set_dict;
     PackedArray* data_arr; 
     int distinct_num=0;
     int bit_num;
+    string column_name;
+    string column_type;
+private:
+    int record_num;
 };
 
 #endif
