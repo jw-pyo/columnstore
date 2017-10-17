@@ -1,5 +1,3 @@
-#ifndef _MAIN_CC_
-#define _MAIN_CC_
 
 #include <iostream>
 #include <stdlib.h>
@@ -8,15 +6,17 @@
 #include <unistd.h>
 
 #include "Table.h"
+
 using namespace std;
 
 int main(){
 
+cout << "start " << endl;
 struct rusage usage;
 struct timeval start, end;
-string sensors_name[8] = {"data/sensors.csv", "sensors", "SID", "unsigned int", "EID", "unsigned int", "TYPE", "unsigned int"};
-string entities_name[8] = {"data/entities.csv", "entities", "EID", "unsigned int", "NAME", "string", "TYPE", "unsigned int"};
-string sample_game_name[28] = {"data/sample-game.csv", "sample-game", "SID", "unsigned int", "TS", "double", "X", "int", "Y", "int", "Z", "int", "V", "unsigned int", "A", "unsigned int", "VX", "int", "VY", "int", "VZ", "int", "AX", "int", "AY", "int", "AZ", "int"};
+vector<string> sensors_name {"data/sensors.csv", "sensors", "SID", "unsigned int", "EID", "unsigned int", "TYPE", "unsigned int"};
+vector<string> entities_name {"data/entities.csv", "entities", "EID", "unsigned int", "NAME", "string", "TYPE", "unsigned int"};
+vector<string> sample_game_name {"data/sample-game.csv", "sample-game", "SID", "unsigned int", "TS", "double", "X", "int", "Y", "int", "Z", "int", "V", "unsigned int", "A", "unsigned int", "VX", "int", "VY", "int", "VZ", "int", "AX", "int", "AY", "int", "AZ", "int"};
 //string full_game_name[14] = {"sample-game", "SID", "TS", "X", "Y", "Z", "V", "A", "VX", "VY", "VZ", "AX", "AY", "AZ"};
 
 //Table_3<unsigned int, unsigned int, unsigned int>* t_sensors = new Table_3<unsigned int, unsigned int, unsigned int>(sensors_name, 42);
@@ -24,12 +24,18 @@ string sample_game_name[28] = {"data/sample-game.csv", "sample-game", "SID", "un
 getrusage(RUSAGE_SELF, &usage);
 start = usage.ru_utime;
 Table* t_sensors = new Table(sensors_name, 42);
+Table* t_entities = new Table(entities_name, 21);
+Table* t_sample_game = new Table(sample_game_name, 1048576);
 getrusage(RUSAGE_SELF, &usage);
 end = usage.ru_utime;
 cout << "StartTime to load sample table: " << start.tv_sec << "." << start.tv_usec << endl;
 cout << "EndTime to load sample table: " << end.tv_sec << "." << end.tv_usec << endl;
 cout << "Use memory with table load: " << usage.ru_maxrss/(1024*1024) << " Mbytes" <<  endl;
-t_sensors->getRecord(5);
+t_sensors->getRecord(0);
+t_sample_game->getRecord(50000);
+t_entities->getRecord(20);
+
+
 /*
 t_sample_game->col_0->edict->get_record(0);
 t_sample_game->col_1->edict->get_record(1);
@@ -74,4 +80,3 @@ delete t_sensors;
 return 0;
 }
 
-#endif

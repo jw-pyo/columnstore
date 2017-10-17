@@ -8,18 +8,17 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <boost/variant.hpp>
 
-#include "util.h"
 #include "Column.h"
 
 using namespace std;
+
 
 // for sensors.csv, entities.csv
 class Table {
 
     public:
-       Table (string* table_info, int record_num_);
+       Table (vector<string> table_info, int record_num_);
        ~Table ();
        void getRecord(int index);
        void getMemSize();
@@ -160,4 +159,5 @@ class Table_13 {
     int record_num;
 };
 */
+
 #endif

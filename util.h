@@ -2,16 +2,18 @@
 #define _UTIL_H_
 
 #include <iostream>
+#include <stdlib.h>
 #include <string>
 #include <sstream>
 #include <fstream>
 #include <typeinfo>
 
 using namespace std;
-#define	MAX_TOK	15
 
-
-string* strSplit(string strOrigin, string strTok) {
+class Util {
+    public:
+static string* strSplit(string strOrigin, string strTok) {
+    int MAX_TOK = 15;
     int cutAt;  // 자르는 위치
     int index = 0;  // 문자열 인덱스
     string* strResult = new string[MAX_TOK]; 
@@ -33,22 +35,48 @@ string* strSplit(string strOrigin, string strTok) {
 		return strResult;
 }
 
-
-
-template <typename T> T convert_to(std::string &str) {
-    
-    T val;
-    std::stringstream ss(str);
-    ss >> val;
-    if(typeid(val).name() == typeid(str).name())
+static bool isNumber(const string &s){
+    if(s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+')))
     {
-	return (T)str;
+	return false;
     }
-    return val;
+    char *p;
+    double val = strtod(s.c_str(), &p);
+    return p != s.c_str() && val != HUGE_VAL;
 }
 
-
-
-
-
+static double strToInt(const string &s){
+    if(s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+')))
+    {
+	cout << "It cannot convert from string to int. " << endl;
+	assert(false);
+    }
+    char *p;
+    long val = strtol(s.c_str(), &p, 10);
+    if(p != s.c_str() && val != HUGE_VAL) return (int)val;
+    assert(false);
+}
+static double strToUint(const string &s){
+    if(s.empty() || ((!isdigit(s[0]))  && (s[0] != '+')))
+    {
+	cout << "It cannot convert from string to unsigned int. " << endl;
+	assert(false);
+    }
+    char *p;
+    unsigned long val = strtoul(s.c_str(), &p, 10);
+    if(p != s.c_str() && val != HUGE_VAL) return (unsigned int)val;
+    assert(false);
+}
+static double strToDouble(const string &s){
+    if(s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+')))
+    {
+	cout << "It cannot convert from string to double. " << endl;
+	assert(false);
+    }
+    char *p;
+    double val = strtod(s.c_str(), &p);
+    if(p != s.c_str() && val != HUGE_VAL) return val;
+    assert(false);
+}
+};
 #endif

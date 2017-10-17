@@ -4,85 +4,54 @@
 #include <iostream>
 #include <vector>
 #include <map>
-#include <algorithm>
 #include <stdlib.h>
-#include <math.h>
-#include <typeinfo>
-#include <sstream>
 #include <boost/bimap.hpp>
+#include <sstream>
+
 #include "PackedArray.h"
+#include "util.h"
 using namespace std;
 
-
-
-template <typename U>
-struct CompareByMember {
-        // This is a pointer-to-member, it represents a member of class T
-    	// The data member has type U
- 	 bool operator()(const U &lhs, const U &rhs) {
-     	     return lhs < rhs;
-		}
-	};
+enum {
+    STRING,
+    DOUBLE,
+    UINT,
+    INT
+};
 
 //template <typename T>
 class Column {
     public:
-	Column(string column_name_, string column_type_, int record_num_, bool lossy=false) {
-	    
-	//assume data are all in.
-        //set_dict is already made.
-        record_num = record_num_;
-	};
-
-	~Column() { 
-	    set_dict.clear();
-	    dict.clear();
-	    PackedArray_destroy(data_arr);
-	    cout << "Delete Column: " << column_name  << endl;
-	};
+	Column(string column_name_, string column_type_, int record_num_, bool lossy=false);
+	~Column();
+    void    push_setdict(string val);
+    void    make_dict();
+    void    setDistinct();
+    void    make_arr();
+    void    fill_arr(int index, string val);
+    void    getValue(int index, string &s, double &d, unsigned int &u, int &i);
+    void    printMap();
     
-    void    push_setdict(string val) {
-        set_dict.insert(val);
-    }
-    
-    void    make_dict(){
-        int i=0;
-        for(set<string>::iterator it=set_dict.begin(); it!=set_dict.end(); it++){
-            dict.insert({(*it), i++});
-        }
-    }
-
-    void    setDistinct(){
-        distinct_num = dict.size();
-    }
-   
-    void    make_arr(){
-        int bit = (int)ceil(log2(distinct_num));
-        data_arr = PackedArray_create(bit, record_num);
-    }
-
-
-    void    fill_arr(int index, string val){
-            PackedArray_set(data_arr, index, dict.left.at(val));
-        }
-    string  getValue(int index){
-    	uint32_t ret;
-    	ret = PackedArray_get(data_arr, index);
-	    return dict.right.at((int)ret);
-	}
-	
-    typedef boost::bimap<string, int> bimap_t;
+    typedef boost::bimap<string, unsigned int> bimap_t1;
+    typedef boost::bimap<double, unsigned int> bimap_t2;
+    typedef boost::bimap<unsigned int, unsigned int> bimap_t3;
+    typedef boost::bimap<int, unsigned int> bimap_t4;
     //typedef bimap_t::value_type value_type;
-    bimap_t dict;
-    set<string> set_dict;
+    bimap_t1 dict1;
+    bimap_t2 dict2;
+    bimap_t3 dict3;
+    bimap_t4 dict4;
+    set<string> set_dict1;
+    set<double> set_dict2;
+    set<unsigned int> set_dict3;
+    set<int> set_dict4;
+
     PackedArray* data_arr; 
     int distinct_num=0;
     int bit_num;
     string column_name;
-    string column_type;
+    int column_type;
 private:
     int record_num;
 };
-
 #endif
-
