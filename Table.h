@@ -8,8 +8,12 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <iomanip> // for setprecision
+#include <stdio.h> // for strcat
+
 
 #include "Column.h"
+#include "Intermediate.h"
 
 using namespace std;
 
@@ -18,12 +22,20 @@ using namespace std;
 class Table {
 
     public:
-       Table (vector<string> table_info, int record_num_);
-       ~Table ();
+        Table();
+	Table(vector<string> table_info, int record_num_);
+       ~Table();
        void getRecord(int index);
+       Table* select(vector<int> column_list, string alias_name);
+       void  where_and(vector<int> column_list, vector<char> op, vector<string> threshold);
+       void  where_or(vector<int> column_list, vector<char> op, vector<string> threshold);
+       void Join(Column* c1, Column* c2, int printRecord);
+       void materialize();
        void getMemSize();
-
+       //Table* materialize();
+       
     //Column** column;
+    vector<Intermediate> inter;
     vector<Column*> column;
     vector<string> column_name;
     vector<string> column_type;
