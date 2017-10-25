@@ -20,6 +20,7 @@ Table::Table(vector<string> table_info, int record_num_){
     
     for(int i=0; i<col_num; i++){
 	column.push_back(new Column(column_name[i], column_type[i], record_num, false));
+    	select_column.push_back(i);
     }
     //input data
     ifstream dataFile(table_info[0]);
@@ -71,13 +72,42 @@ void Table::getRecord(int index) {
     double d;
     unsigned int u;
     int i;
+    	for(int j : select_column) {
+    	    column[j]->getValue(index, s, d, u, i);
+    	    if(column_type[j] == "string") cout << s << "|" ;
+    	    else if(column_type[j] == "double") cout << setprecision(17) << d << "|" ;
+    	    else if(column_type[j] == "unsigned int") cout << u << "|" ;
+    	    else if(column_type[j] == "int") cout << i << "|" ;
+    	    //cout<< column[j]->getValue(index) << "|" ;
+	}
+	cout << endl;
+}
+
+void Table::getRecordNoLine(int index) {
+    string s;
+    double d;
+    unsigned int u;
+    int i;
+    for(int j: select_column) {
+	column[j]->getValue(index, s, d, u, i);
+	if(column_type[j] == "string") cout << s << "|" ;
+	else if(column_type[j] == "double") cout << setprecision(17) << d << "|" ;
+	else if(column_type[j] == "unsigned int") cout << u << "|" ;
+	else if(column_type[j] == "int") cout << i << "|" ;
+    }
+}
+void Table::getRecordWithColumn(int index) {
+    string s;
+    double d;
+    unsigned int u;
+    int i;
     cout << "|";
-    for(int j=0; j < col_num; j++)
+    for(int j: select_column)
     {
 	cout << column_name[j] << "|";
     } cout << endl;
     cout << "----------------------------------------" << endl; 
-    for(int j=0; j<col_num-1; j++) {
+    for(int j: select_column) {
 	column[j]->getValue(index, s, d, u, i);
 	if(column_type[j] == "string") cout << s << "|" ;
 	else if(column_type[j] == "double") cout << setprecision(17) << d << "|" ;
@@ -85,61 +115,134 @@ void Table::getRecord(int index) {
 	else if(column_type[j] == "int") cout << i << "|" ;
 	//cout<< column[j]->getValue(index) << "|" ;
     }
-
-	column[col_num - 1]->getValue(index, s, d, u, i);
-	if(column_type[col_num - 1] == "string") cout << s << endl;
-	else if(column_type[col_num - 1] == "double") cout << setprecision(17) << d << endl;
-	else if(column_type[col_num - 1] == "unsigned int") cout << u << endl;
-	else if(column_type[col_num - 1] == "int") cout << i << endl;
-    //cout << column[col_num - 1]->getValue(index) << endl;
+	cout << endl;
 };
 
-Table* Table::select(vector<int> column_list, string alias_name){
-    Table* ret = new Table();
-    ret->record_num = record_num;
-    ret->col_num = column_list.size();
-    ret->t_name = alias_name;
-    for(auto it=column_list.begin(); it!= column_list.end(); ++it){
-	int j = (*it);
-	ret->column_name.push_back(column_name[j]);
-	ret->column_type.push_back(column_type[j]);
-	ret->column.push_back(new Column(*column[j]));
+void Table::getAllRecord(vector<int>* record_list){
+    string s; double d; unsigned int u; int i;
+    for(int j: select_column)
+    {
+	cout << column_name[j] << "|";
+    } cout << endl;
+    cout << "----------------------------------------" << endl; 
+    if(record_list == NULL)
+    {
+	for(int i=0; i<record_num; i++) getRecord(i);
     }
-
-    return ret;
-    
+    else
+    {
+    	for(auto &i: *record_list) 
+	{
+	    getRecord(i);
+    	}
+    }
 }
 
-/*void Table::where_and(vector<int> column_list, vector<char> op, vector<string> threshold){
-    
-    Table* ret = new Table();
-    ret->record_num = record_num;
-    ret->col_num = column_list.size();
-    ret->t_name = alias_name;
+void Table::getResult(){
+    string s; double d; unsigned int u; int i;
+    for(int j: select_column)
+    {
+	cout << column_name[j] << "|";
+    } cout << endl;
+    cout << "----------------------------------------" << endl; 
+    for(int k: where_row)
+	getRecord(k);
+}
+
+void Table::select(vector<int> column_list){
+    select_column.clear();
     for(auto it=column_list.begin(); it!= column_list.end(); ++it){
 	int j = (*it);
-	ret->column_name.push_back(column_name[j]);
-	ret->column_type.push_back(column_type[j]);
-	ret->column.push_back(new Column(*column[j]));
+	select_column.push_back(j);
     }
+}
 
-   // return ret;
-}*/
+void Table::where(int col_num, char op, string threshold){
+    // update where_row
+    where_row.clear();
+    if(op == '='){
+	for(int i=0; i<record_num; i++){
+	    string q; double w; unsigned int e; int r;
+	    column[col_num]->getValue(i, q, w, e, r);
+	    switch(column[col_num]->column_type){
+		case STRING: if(q.compare(threshold[i]) == 0) where_row.push_back(i); break;
+		case DOUBLE: if(w==Util::strToDouble(threshold[i])) where_row.push_back(i); break;
+		case UINT: if(e==Util::strToUint(threshold[i])) where_row.push_back(i); break;
+		case INT: if(r==Util::strToInt(threshold[i])) where_row.push_back(i); break;
+	    }
+	}
+    }
+    else if(op == '>'){
+	for(int i=0; i<record_num; i++){
+	    string q; double w; unsigned int e; int r;
+	    column[col_num]->getValue(i, q, w, e, r);
+	    switch(column[col_num]->column_type){
+		case STRING: if(q.compare(threshold[i]) > 0) where_row.push_back(i); break;
+		case DOUBLE: if(w > Util::strToDouble(threshold[i])) where_row.push_back(i); break;
+		case UINT: if(e > Util::strToUint(threshold[i])) where_row.push_back(i); break;
+		case INT: if(r > Util::strToInt(threshold[i])) where_row.push_back(i); break;
+	    }
+	}
+    }
+    else if(op == '<'){
+	for(int i=0; i<record_num; i++){
+	    string q; double w; unsigned int e; int r;
+	    column[col_num]->getValue(i, q, w, e, r);
+	    switch(column[col_num]->column_type){
+		case STRING: if(q.compare(threshold[i]) < 0) where_row.push_back(i); break;
+		case DOUBLE: if(w < Util::strToDouble(threshold[i])) where_row.push_back(i); break;
+		case UINT: if(e < Util::strToUint(threshold[i])) where_row.push_back(i); break;
+		case INT: if(r < Util::strToInt(threshold[i])) where_row.push_back(i); break;
+	    }
+	}
+    }
+    else{
+	cout << "Invalid op in where clause. " << endl;
+	assert(false);
+    }
+}
+
+void Table::where_and(int col_num, char op, string threshold){
+    
+    if(op =='='){
+	for(auto j = where_row.begin(); j != where_row.end(); ++j)
+	{
+    	    string q; double w; unsigned int e; int r;
+	    column[col_num]->getValue(*j, q, w, e, r);
+	    switch(column[col_num]->column_type){
+		case STRING: if(q.compare(threshold) == 0) where_row.erase(j); break;
+		case DOUBLE: if(w==Util::strToDouble(threshold)) where_row.erase(j); break;
+		case UINT: if(e==Util::strToUint(threshold)) where_row.erase(j); break;
+		case INT: if(r==Util::strToInt(threshold)) where_row.erase(j); break;
+	    }
+	}
+    }
+}
+
+
+
 void Table::Join(Column* c1, Column* c2, int printRecord){
-    inter.push_back(Intermediate(c1, c2, printRecord));
+    inter.push_back(Intermediate());
+    inter[inter.size() - 1].Join(c1, c2, printRecord);
 }
 
-void Table::materialize(){
-    int join_num = inter.size();
+void Table::materialize(Table* one, Table* two){
+   /* int join_num = inter.size();
     if(join_num == 1)
     {
 	for(auto it=inter[0].record_set.begin(); it!=inter[0].record_set.end(); ++it){
 	    int c1_index = it->first;
 	    int c2_index = it->second;
+	    one->getRecordNoLine(it->first);
+	    two->getRecord(it->second);
+	}
+    }*/
+    vector<Column*> mat_columns;
+    vector<vector<int>> mat_records;
+    for(int i=0; i<inter.size(); i++){
+	for(auto it=inter[i].record_set.begin(); it!=inter[i].record_set.end(); ++it){
 
-    }
-
-
+}
 
 
 

@@ -19,7 +19,7 @@ vector<string> sample_game_name {"data/sample-game.csv", "sample-game", "SID", "
 
 getrusage(RUSAGE_SELF, &usage);
 start = usage.ru_utime;
-
+/* table load */
 Table* t_sensors = new Table(sensors_name, 42);
 Table* t_entities = new Table(entities_name, 21);
 //Table* t_sample_game = new Table(sample_game_name, 1048576);
@@ -29,12 +29,19 @@ end = usage.ru_utime;
 cout << "Time to load sample table: " << (end.tv_sec+end.tv_usec/100000.0) - (start.tv_sec + start.tv_usec/100000.0) << " sec" << endl;
 cout << "Use memory with table load: " << usage.ru_maxrss/(1024*1024) << " Mbytes" <<  endl;
 
-//t_sample_game->select(vector<int> {1,2,4}, "sample")->getRecord(0);
-//t_entities->Join(1);
 
-Table* join_table = new Table();
-join_table->Join(t_sensors->column[2], t_entities->column[2], 1600);
+/* table select */
+t_entities->select(vector<int> {0,1});
+/* where query */
+vector<int> where_query = (t_entities->where_and(vector<int> {2, 1}, vector<char> {'=','='}, vector<string> {"1", "\"Ball 1\""}));
+t_entities->getAllRecord();
+t_entities->getAllRecord(&where_query);
 
+/*Table join*/
+//Table* join_table = new Table();
+//join_table->Join(t_sensors->column[2], t_entities->column[2], 1600);
+//join_table->Join(
+//join_table->materialize(t_sensors, t_entities);
 
 //t_sample_game->sid_40();
 //t_sample_game->v_less_5000000();
@@ -47,7 +54,7 @@ join_table->Join(t_sensors->column[2], t_entities->column[2], 1600);
 delete t_sensors;
 delete t_entities;
 //delete t_sample_game;
-delete join_table;
+//delete join_table;
 //getrusage(RUSAGE_SELF, &usage);
 //cout << "Use memory after deleting: " << usage.ru_maxrss/(1024*1024) << " Mbytes" <<  endl;
 

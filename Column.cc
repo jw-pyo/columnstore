@@ -148,12 +148,12 @@ TransMap Column::makeHashTable(Column* c1, Column* c2) {
 	    auto it_c2 = c2->dict.left.begin();
 	    while(it_c1 != c1->dict.left.end() && it_c2 != c2->dict.left.end())
 	    {
-		if((*it_c1).first == (*it_c2).first)
+		if((*it_c1).first.compare((*it_c2).first) == 0)
 		{
 		    ret.insert({(*it_c1).second, (*it_c2).second});
 		    it_c1++;
 		}
-		else if((*it_c1).first > (*it_c2).first)
+		else if((*it_c1).first.compare((*it_c2).first) > 0)
 		{
 		    it_c2++;
 		}

@@ -16,8 +16,17 @@
 #include "Intermediate.h"
 
 using namespace std;
+/*
+typedef struct inter_set{
+    inter_set(){};
+    vector<unsigned int> c1_records;
+    vector<unsigned int> c2_records;
+} inter_set;
 
-
+typedef struct Intermediate{
+    Intermediate(){};
+    void _Join(Table* t1, Column* c1, 
+*/
 // for sensors.csv, entities.csv
 class Table {
 
@@ -26,11 +35,15 @@ class Table {
 	Table(vector<string> table_info, int record_num_);
        ~Table();
        void getRecord(int index);
-       Table* select(vector<int> column_list, string alias_name);
-       void  where_and(vector<int> column_list, vector<char> op, vector<string> threshold);
+       void getRecordNoLine(int index);
+       void getRecordWithColumn(int index);
+       void getAllRecord(vector<int>* record_list=NULL);
+       void getResult();
+       void select(vector<int> column_list);
+       vector<int>  where_and(vector<int> column_list, vector<char> op, vector<string> threshold);
        void  where_or(vector<int> column_list, vector<char> op, vector<string> threshold);
        void Join(Column* c1, Column* c2, int printRecord);
-       void materialize();
+       void materialize(Table* one, Table* two);
        void getMemSize();
        //Table* materialize();
        
@@ -38,9 +51,12 @@ class Table {
     vector<Intermediate> inter;
     vector<Column*> column;
     vector<string> column_name;
+    vector<int> select_column;
+    vector<int> where_row;
     vector<string> column_type;
     string t_name;
     int record_num;
+    PackedArray* where_mask;
     int col_num;
 
 };
