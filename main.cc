@@ -35,12 +35,12 @@ t_entities->select(vector<int> {0,1,2});
 /* where query */
 //vector<int> where_query = (t_entities->where_and(vector<int> {2, 1}, vector<char> {'=','='}, vector<string> {"1", "\"Ball 1\""}));
 t_entities->where(2, '>', "1");
-t_entities->where_and(1, '>', "\"Ball 1\"");
+t_entities->where_or(1, '>', "\"Ball 1\"");
 t_entities->getResult();
 
 /*Table join*/
-//Table* join_table = new Table();
-//join_table->Join(t_sensors->column[2], t_entities->column[2], 1600);
+Table* join_table = new Table();
+join_table->Join(t_sensors, t_entities, 2, 2, 1600);
 //join_table->Join(
 //join_table->materialize(t_sensors, t_entities);
 

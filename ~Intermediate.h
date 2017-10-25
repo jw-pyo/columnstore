@@ -9,20 +9,19 @@
 
 using namespace std;
 
-typedef struct inter_set{
+/*typedef struct inter_set{
     inter_set(){};
 
     vector<unsigned int> c1_records;
     vector<unsigned int> c2_records;
 } inter_set;
-
+*/
 class Intermediate {
     public:
 
 	Intermediate(){};
 	~Intermediate(){};
 	void Join(Column* c1, Column* c2,  int printRecord){
-	    if(c1 == NULL) {NextJoin(c2, printRecord); return;}
 	    transmap = Column::makeHashTable(c1, c2);
 	    reverse_transmap = Column::makeHashTable(c2, c1);
 	    TransMap::iterator it;
@@ -77,13 +76,6 @@ class Intermediate {
 		rs_it++;
 	    }
 	}
-	void NextJoin(Column* c2, int printRecord){
-	
-	
-	
-	
-	
-	}	
 	TransMap transmap, reverse_transmap;
 	unordered_map<unsigned int, inter_set> mid_storage; // not used after Join
 	vector<pair<int, int>> record_set;
