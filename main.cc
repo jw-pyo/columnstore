@@ -31,11 +31,12 @@ cout << "Use memory with table load: " << usage.ru_maxrss/(1024*1024) << " Mbyte
 
 
 /* table select */
-t_entities->select(vector<int> {0,1});
+t_entities->select(vector<int> {0,1,2});
 /* where query */
-vector<int> where_query = (t_entities->where_and(vector<int> {2, 1}, vector<char> {'=','='}, vector<string> {"1", "\"Ball 1\""}));
-t_entities->getAllRecord();
-t_entities->getAllRecord(&where_query);
+//vector<int> where_query = (t_entities->where_and(vector<int> {2, 1}, vector<char> {'=','='}, vector<string> {"1", "\"Ball 1\""}));
+t_entities->where(2, '>', "1");
+t_entities->where_and(1, '>', "\"Ball 1\"");
+t_entities->getResult();
 
 /*Table join*/
 //Table* join_table = new Table();

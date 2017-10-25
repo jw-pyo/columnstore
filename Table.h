@@ -40,8 +40,9 @@ class Table {
        void getAllRecord(vector<int>* record_list=NULL);
        void getResult();
        void select(vector<int> column_list);
-       vector<int>  where_and(vector<int> column_list, vector<char> op, vector<string> threshold);
-       void  where_or(vector<int> column_list, vector<char> op, vector<string> threshold);
+       void where(int col_num, char op, string threshold);
+       void where_and(int col_num, char op, string threshold);
+       void where_or(int col_num, char op, string threshold);
        void Join(Column* c1, Column* c2, int printRecord);
        void materialize(Table* one, Table* two);
        void getMemSize();

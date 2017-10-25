@@ -165,10 +165,10 @@ void Table::where(int col_num, char op, string threshold){
 	    string q; double w; unsigned int e; int r;
 	    column[col_num]->getValue(i, q, w, e, r);
 	    switch(column[col_num]->column_type){
-		case STRING: if(q.compare(threshold[i]) == 0) where_row.push_back(i); break;
-		case DOUBLE: if(w==Util::strToDouble(threshold[i])) where_row.push_back(i); break;
-		case UINT: if(e==Util::strToUint(threshold[i])) where_row.push_back(i); break;
-		case INT: if(r==Util::strToInt(threshold[i])) where_row.push_back(i); break;
+		case STRING: if(q.compare(threshold) == 0) where_row.push_back(i); break;
+		case DOUBLE: if(w==Util::strToDouble(threshold)) where_row.push_back(i); break;
+		case UINT: if(e==Util::strToUint(threshold)) where_row.push_back(i); break;
+		case INT: if(r==Util::strToInt(threshold)) where_row.push_back(i); break;
 	    }
 	}
     }
@@ -177,10 +177,10 @@ void Table::where(int col_num, char op, string threshold){
 	    string q; double w; unsigned int e; int r;
 	    column[col_num]->getValue(i, q, w, e, r);
 	    switch(column[col_num]->column_type){
-		case STRING: if(q.compare(threshold[i]) > 0) where_row.push_back(i); break;
-		case DOUBLE: if(w > Util::strToDouble(threshold[i])) where_row.push_back(i); break;
-		case UINT: if(e > Util::strToUint(threshold[i])) where_row.push_back(i); break;
-		case INT: if(r > Util::strToInt(threshold[i])) where_row.push_back(i); break;
+		case STRING: if(q.compare(threshold) > 0) where_row.push_back(i); break;
+		case DOUBLE: if(w > Util::strToDouble(threshold)) where_row.push_back(i); break;
+		case UINT: if(e > Util::strToUint(threshold)) where_row.push_back(i); break;
+		case INT: if(r > Util::strToInt(threshold)) where_row.push_back(i); break;
 	    }
 	}
     }
@@ -189,10 +189,10 @@ void Table::where(int col_num, char op, string threshold){
 	    string q; double w; unsigned int e; int r;
 	    column[col_num]->getValue(i, q, w, e, r);
 	    switch(column[col_num]->column_type){
-		case STRING: if(q.compare(threshold[i]) < 0) where_row.push_back(i); break;
-		case DOUBLE: if(w < Util::strToDouble(threshold[i])) where_row.push_back(i); break;
-		case UINT: if(e < Util::strToUint(threshold[i])) where_row.push_back(i); break;
-		case INT: if(r < Util::strToInt(threshold[i])) where_row.push_back(i); break;
+		case STRING: if(q.compare(threshold) < 0) where_row.push_back(i); break;
+		case DOUBLE: if(w < Util::strToDouble(threshold)) where_row.push_back(i); break;
+		case UINT: if(e < Util::strToUint(threshold)) where_row.push_back(i); break;
+		case INT: if(r < Util::strToInt(threshold)) where_row.push_back(i); break;
 	    }
 	}
     }
@@ -203,20 +203,101 @@ void Table::where(int col_num, char op, string threshold){
 }
 
 void Table::where_and(int col_num, char op, string threshold){
-    
+    vector<int> erase_list; 
     if(op =='='){
 	for(auto j = where_row.begin(); j != where_row.end(); ++j)
 	{
     	    string q; double w; unsigned int e; int r;
 	    column[col_num]->getValue(*j, q, w, e, r);
 	    switch(column[col_num]->column_type){
-		case STRING: if(q.compare(threshold) == 0) where_row.erase(j); break;
-		case DOUBLE: if(w==Util::strToDouble(threshold)) where_row.erase(j); break;
-		case UINT: if(e==Util::strToUint(threshold)) where_row.erase(j); break;
-		case INT: if(r==Util::strToInt(threshold)) where_row.erase(j); break;
+		case STRING: if(q.compare(threshold) != 0) erase_list.push_back(*j); break;
+		case DOUBLE: if(w != Util::strToDouble(threshold)) erase_list.push_back(*j); break;
+		case UINT: if(e != Util::strToUint(threshold)) erase_list.push_back(*j); break;
+		case INT: if(r != Util::strToInt(threshold)) erase_list.push_back(*j); break;
 	    }
 	}
     }
+    else if(op =='>'){
+	for(auto j = where_row.begin(); j != where_row.end(); ++j)
+	{
+    	    string q; double w; unsigned int e; int r;
+	    column[col_num]->getValue(*j, q, w, e, r);
+	    switch(column[col_num]->column_type){
+		case STRING: if(q.compare(threshold) <= 0) erase_list.push_back(*j); break;
+		case DOUBLE: if(w <= Util::strToDouble(threshold)) erase_list.push_back(*j); break;
+		case UINT: if(e <= Util::strToUint(threshold)) erase_list.push_back(*j); break;
+		case INT: if(r <= Util::strToInt(threshold)) erase_list.push_back(*j); break;
+	    }
+	}
+    }
+    if(op =='<'){
+	for(auto j = where_row.begin(); j != where_row.end(); ++j)
+	{
+    	    string q; double w; unsigned int e; int r;
+	    column[col_num]->getValue(*j, q, w, e, r);
+	    switch(column[col_num]->column_type){
+		case STRING: if(q.compare(threshold) >= 0) erase_list.push_back(*j); break;
+		case DOUBLE: if(w >= Util::strToDouble(threshold)) erase_list.push_back(*j); break;
+		case UINT: if(e >= Util::strToUint(threshold)) erase_list.push_back(*j); break;
+		case INT: if(r >= Util::strToInt(threshold)) erase_list.push_back(*j); break;
+	    }
+	}
+    }
+
+    for(auto it=erase_list.begin(); it != erase_list.end(); ++it){
+	auto a = find(where_row.begin(), where_row.end(), *it);
+	if (a != where_row.end()) where_row.erase(a);
+    }
+}
+
+void Table::where_or(int col_num, char op, string threshold){
+    vector<int> add_list; 
+    if(op =='='){
+	for(int j = 0; j < record_num; j++)
+	{
+    	    string q; double w; unsigned int e; int r;
+	    column[col_num]->getValue(j, q, w, e, r);
+	    switch(column[col_num]->column_type){
+		case STRING: if(q.compare(threshold) == 0) add_list.push_back(j); break;
+		case DOUBLE: if(w == Util::strToDouble(threshold)) add_list.push_back(j); break;
+		case UINT: if(e == Util::strToUint(threshold)) add_list.push_back(j); break;
+		case INT: if(r == Util::strToInt(threshold)) add_list.push_back(j); break;
+	    }
+	}
+    }
+    else if(op =='>'){
+	for(int j = 0; j < record_num; j++)
+	{
+    	    string q; double w; unsigned int e; int r;
+	    column[col_num]->getValue(j, q, w, e, r);
+	    switch(column[col_num]->column_type){
+		case STRING: if(q.compare(threshold) > 0) add_list.push_back(j); break;
+		case DOUBLE: if(w > Util::strToDouble(threshold)) add_list.push_back(j); break;
+		case UINT: if(e > Util::strToUint(threshold)) add_list.push_back(j); break;
+		case INT: if(r > Util::strToInt(threshold)) add_list.push_back(j); break;
+	    }
+	}
+    }
+    else if(op =='<'){
+	for(int j = 0; j < record_num; j++)
+	{
+    	    string q; double w; unsigned int e; int r;
+	    column[col_num]->getValue(j, q, w, e, r);
+	    switch(column[col_num]->column_type){
+		case STRING: if(q.compare(threshold) < 0) add_list.push_back(j); break;
+		case DOUBLE: if(w < Util::strToDouble(threshold)) add_list.push_back(j); break;
+		case UINT: if(e < Util::strToUint(threshold)) add_list.push_back(j); break;
+		case INT: if(r < Util::strToInt(threshold)) add_list.push_back(j); break;
+	    }
+	}
+    }
+
+    for(auto it=add_list.begin(); it != add_list.end(); ++it){
+	
+	if(find(where_row.begin(), where_row.end(), (*it)) == where_row.end()) where_row.push_back(*it);
+    }
+    // sort where_row vector in ascending order 
+    sort(where_row.begin(), where_row.end());
 }
 
 
@@ -242,9 +323,8 @@ void Table::materialize(Table* one, Table* two){
     for(int i=0; i<inter.size(); i++){
 	for(auto it=inter[i].record_set.begin(); it!=inter[i].record_set.end(); ++it){
 
+	}
+    }
 }
 
-
-
-void Table::getMemSize() {};
-
+//void Table::getMemSize();
