@@ -54,10 +54,7 @@ Table* join2_1 = new Table();
 join2_1->Join(t_sample_game, t_sensors, 0, 0, 10);
 cout << "record set size: " << join2_1->record_set.size() << endl;
 join2_1->where(0, 5, '>', "5000000");
-for(auto it=join2_1->where_row.begin(); it!=join2_1->where_row.end(); ++it) {cout << (*it) << endl;}
 join2_1->where_and(1, 2, '=', "2");
-cout << "record set size: " << join2_1->record_set.size() << endl;
-for(auto it=join2_1->where_row.begin(); it!=join2_1->where_row.end(); ++it) {cout << (*it) << endl;}
 join2_1->getResult(10);
 getrusage(RUSAGE_SELF, &usage);
 end = usage.ru_utime;
@@ -82,17 +79,42 @@ t_sample_game->reset();
 t_sensors->reset();
 
 //query 3-1
-//Table* join3_1 = new Table();
-//join3_1->Join(
+getrusage(RUSAGE_SELF, &usage);
+start = usage.ru_utime;
+Table* join3_1 = new Table();
+join3_1->Join(t_sample_game, t_sensors, 0, 0, 10);
+join3_1->Join(t_sensors, t_entities, 1, 0, 10, false);
+
+join3_1->where(2, 1, '=', "\"Ball 1\"");
+join3_1->where_and(0, 5, '<', "5000000");
+join3_1->getResult(10);
+getrusage(RUSAGE_SELF, &usage);
+end = usage.ru_utime;
+cout << "Query 3-1 time: " << (end.tv_sec+end.tv_usec/100000.0) - (start.tv_sec + start.tv_usec/100000.0) << " sec" << endl;
+delete join3_1;
+t_sample_game->reset();
+t_sensors->reset();
+t_entities->reset();
+
+//query 3-2
+getrusage(RUSAGE_SELF, &usage);
+start = usage.ru_utime;
+Table* join3_2 = new Table();
+t_entities->where(2, 1, '=', "\"Ball 1\"");
+t_sample_game->where(0, 5, '<', "5000000");
+join3_2->Join(t_sample_game, t_sensors, 0, 0, 10);
+join3_2->Join(t_sensors, t_entities, 1, 0, 10, false);
+join3_2->getResult(10);
+getrusage(RUSAGE_SELF, &usage);
+end = usage.ru_utime;
+cout << "Query 3-2 time: " << (end.tv_sec+end.tv_usec/100000.0) - (start.tv_sec + start.tv_usec/100000.0) << " sec" << endl;
+delete join3_2;
+t_sample_game->reset();
+t_sensors->reset();
+t_entities->reset();
 
 
-/*Table join*/
-/*
-Table* join_table = new Table();
-join_table->Join(t_sample_game, t_sensors, 0, 0, 20);
-*/
-//Table* join_table2 = new Table();
-//join_table2->Join(t_sample_game, t_sensors, 0, 0, 100);
+
 
 delete t_sensors;
 delete t_entities;

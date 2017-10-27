@@ -284,6 +284,8 @@ void Table::where(int table_num, int col_num, char op, string threshold){
 	assert(false);
     }
     }
+
+    cout << "where row from " << where_row[0] << " to " << where_row[where_row.size() -1] << endl;
 }
 void Table::where_and(int table_num, int col_num, char op, string threshold){
     vector<int> erase_list;
@@ -292,10 +294,10 @@ void Table::where_and(int table_num, int col_num, char op, string threshold){
     if(jointbl_ptr.size() != 0){
     tbl = jointbl_ptr[table_num];
     if(op =='='){
-	for(auto j = where_row.begin(); j != where_row.end(); ++j)
+	for(int j: where_row)
 	{
     	    string q; double w; unsigned int e; int r;
-	    tbl->column[col_num]->getValue(record_set[*j][table_num], q, w, e, r);
+	    tbl->column[col_num]->getValue(record_set[j][table_num], q, w, e, r);
 	    switch(tbl->column[col_num]->column_type){
 		case STRING: if(q.compare(threshold) != 0) erase_list.push_back(i); break;
 		case DOUBLE: if(w != Util::strToDouble(threshold)) erase_list.push_back(i); break;
@@ -306,10 +308,10 @@ void Table::where_and(int table_num, int col_num, char op, string threshold){
 	}
     }
     else if(op =='>'){
-	for(auto j = where_row.begin(); j != where_row.end(); ++j)
+	for(int j : where_row)
 	{
     	    string q; double w; unsigned int e; int r;
-	    tbl->column[col_num]->getValue(record_set[*j][table_num], q, w, e, r);
+	    tbl->column[col_num]->getValue(record_set[j][table_num], q, w, e, r);
 	    switch(tbl->column[col_num]->column_type){
 		case STRING: if(q.compare(threshold) <= 0) erase_list.push_back(i); break;
 		case DOUBLE: if(w <= Util::strToDouble(threshold)) erase_list.push_back(i); break;
@@ -320,10 +322,10 @@ void Table::where_and(int table_num, int col_num, char op, string threshold){
 	}
     }
     else if(op =='<'){
-	for(auto j = where_row.begin(); j != where_row.end(); ++j)
+	for(int j : where_row)
 	{
     	    string q; double w; unsigned int e; int r;
-	    tbl->column[col_num]->getValue(record_set[*j][table_num], q, w, e, r);
+	    tbl->column[col_num]->getValue(record_set[j][table_num], q, w, e, r);
 	    switch(tbl->column[col_num]->column_type){
 		case STRING: if(q.compare(threshold) >= 0) erase_list.push_back(i); break;
 		case DOUBLE: if(w >= Util::strToDouble(threshold)) erase_list.push_back(i); break;
@@ -338,10 +340,10 @@ void Table::where_and(int table_num, int col_num, char op, string threshold){
     else {
 
     if(op =='='){
-	for(auto j = where_row.begin(); j != where_row.end(); ++j)
+	for(int j: where_row)
 	{
     	    string q; double w; unsigned int e; int r;
-	    tbl->column[col_num]->getValue(record_set[*j][table_num], q, w, e, r);
+	    tbl->column[col_num]->getValue(j, q, w, e, r);
 	    switch(tbl->column[col_num]->column_type){
 		case STRING: if(q.compare(threshold) != 0) erase_list.push_back(i); break;
 		case DOUBLE: if(w != Util::strToDouble(threshold)) erase_list.push_back(i); break;
@@ -352,10 +354,10 @@ void Table::where_and(int table_num, int col_num, char op, string threshold){
 	}
     }
     else if(op =='>'){
-	for(auto j = where_row.begin(); j != where_row.end(); ++j)
+	for(int j : where_row)
 	{
     	    string q; double w; unsigned int e; int r;
-	    tbl->column[col_num]->getValue(record_set[*j][table_num], q, w, e, r);
+	    tbl->column[col_num]->getValue(j, q, w, e, r);
 	    switch(tbl->column[col_num]->column_type){
 		case STRING: if(q.compare(threshold) <= 0) erase_list.push_back(i); break;
 		case DOUBLE: if(w <= Util::strToDouble(threshold)) erase_list.push_back(i); break;
@@ -366,10 +368,10 @@ void Table::where_and(int table_num, int col_num, char op, string threshold){
 	}
     }
     else if(op =='<'){
-	for(auto j = where_row.begin(); j != where_row.end(); ++j)
+	for(int j : where_row)
 	{
     	    string q; double w; unsigned int e; int r;
-	    tbl->column[col_num]->getValue(record_set[*j][table_num], q, w, e, r);
+	    tbl->column[col_num]->getValue(j, q, w, e, r);
 	    switch(tbl->column[col_num]->column_type){
 		case STRING: if(q.compare(threshold) >= 0) erase_list.push_back(i); break;
 		case DOUBLE: if(w >= Util::strToDouble(threshold)) erase_list.push_back(i); break;
@@ -387,6 +389,9 @@ void Table::where_and(int table_num, int col_num, char op, string threshold){
 	where_row.erase(where_row.begin() + ((*it) - k));
     	k++;
     }
+
+
+    cout << "where row from " << where_row[0] << " to " << where_row[where_row.size() -1] << endl;
 }
 
 //DEPRECATED
