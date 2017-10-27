@@ -31,15 +31,19 @@ cout << "Use memory with table load: " << usage.ru_maxrss/(1024*1024) << " Mbyte
 
 
 /* table select */
+
+
+
 //query 1-1
 getrusage(RUSAGE_SELF, &usage);
 start = usage.ru_utime;
 Table* join1_1 = new Table();
+//cout << "join1_1 - where_row: " << join1_1->where_row.size() << endl;
 join1_1->Join(t_sample_game, t_sensors, 0, 0, 10);
+join1_1->getResult(10);
 getrusage(RUSAGE_SELF, &usage);
 end = usage.ru_utime;
 cout << "Query 1-1 time: " << (end.tv_sec+end.tv_usec/100000.0) - (start.tv_sec + start.tv_usec/100000.0) << " sec" << endl;
-delete join1_1;
 t_sample_game->reset();
 t_sensors->reset();
 
@@ -48,12 +52,16 @@ getrusage(RUSAGE_SELF, &usage);
 start = usage.ru_utime;
 Table* join2_1 = new Table();
 join2_1->Join(t_sample_game, t_sensors, 0, 0, 10);
-join2_1->where(1, 2, '=', "1");
-join2_1->where_and(0, 5, '>', "5000000");
+cout << "record set size: " << join2_1->record_set.size() << endl;
+join2_1->where(0, 5, '>', "5000000");
+for(auto it=join2_1->where_row.begin(); it!=join2_1->where_row.end(); ++it) {cout << (*it) << endl;}
+join2_1->where_and(1, 2, '=', "2");
+cout << "record set size: " << join2_1->record_set.size() << endl;
+for(auto it=join2_1->where_row.begin(); it!=join2_1->where_row.end(); ++it) {cout << (*it) << endl;}
+join2_1->getResult(10);
 getrusage(RUSAGE_SELF, &usage);
 end = usage.ru_utime;
 cout << "Query 2-1 time: " << (end.tv_sec+end.tv_usec/100000.0) - (start.tv_sec + start.tv_usec/100000.0) << " sec" << endl;
-delete join2_1;
 t_sample_game->reset();
 t_sensors->reset();
 
@@ -61,9 +69,11 @@ t_sensors->reset();
 getrusage(RUSAGE_SELF, &usage);
 start = usage.ru_utime;
 Table* join2_2 = new Table();
+
+t_sample_game->where(0, 5, '>', "5000000");
+t_sensors->where(1, 2, '=', "2");
 join2_2->Join(t_sample_game, t_sensors, 0, 0, 10);
-join2_2->where(1, 2, '=', "1");
-join2_2->where_and(0, 5, '>', "5000000");
+join2_2->getResult(10);
 getrusage(RUSAGE_SELF, &usage);
 end = usage.ru_utime;
 cout << "Query 2-2 time: " << (end.tv_sec+end.tv_usec/100000.0) - (start.tv_sec + start.tv_usec/100000.0) << " sec" << endl;
@@ -75,10 +85,6 @@ t_sensors->reset();
 //Table* join3_1 = new Table();
 //join3_1->Join(
 
-
-t_entities->where(0,2, '>', "1");
-t_entities->where_or(0,1, '>', "\"Ball 1\"");
-t_entities->getResult();
 
 /*Table join*/
 /*

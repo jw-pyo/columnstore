@@ -39,11 +39,13 @@ class Table {
        void getRecordWithColumn(int index);
        void getAllRecord(vector<int>* record_list=NULL);
        void printColName(bool EndLine = true); // refer column_name
-       void getResult();
+       void getResult(int recordNumber);
+       void putJoinTable(Table* t, int col);
+       void outJoinTable();
        void select(vector<int> column_list);
        void where(int table_num, int col_num, char op, string threshold);
        void where_and(int table_num, int col_num, char op, string threshold);
-       void where_or(int table_num, int col_num, char op, string threshold);
+       void where_or(int table_num, int col_num, char op, string threshold); //DEPRECATED
        void Join(Table* t1, Table* t2, int c1, int c2, int printRecord, bool isFirst=true);
        void reset();
        //void materialize(Table* one, Table* two);
@@ -58,6 +60,7 @@ class Table {
     string t_name;
     int record_num;
     int col_num;
+    bool isEmpty;
     //about query
     vector<int> select_column;
     vector<int> where_row;
