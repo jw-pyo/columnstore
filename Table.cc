@@ -9,7 +9,10 @@ Table::Table(vector<string> table_info, int record_num_){
     string datapath = table_info[0];
     t_name = table_info[1];
     record_num = record_num_;
-    
+    for(int i=0; i<record_num; i++)
+    {
+	where_row.push_back(i);
+    }
     for(int i=2; i<table_info.size(); i+=2){
         column_name.push_back(table_info[i]);
         column_type.push_back(table_info[i+1]);
@@ -149,14 +152,20 @@ void Table::select(vector<int> column_list){
     }
 }
 
-void Table::where(int col_num, char op, string threshold){
+void Table::where(int table_num, int col_num, char op, string threshold){
     // update where_row
     where_row.clear();
+    Table* tbl = this;
+    if(jointbl_ptr.size() != 0) {
+	record_num = record_set.size();
+    	tbl = jointbl_ptr[table_num];
+    }
+
     if(op == '='){
 	for(int i=0; i<record_num; i++){
 	    string q; double w; unsigned int e; int r;
-	    column[col_num]->getValue(i, q, w, e, r);
-	    switch(column[col_num]->column_type){
+	    tbl->column[col_num]->getValue(i, q, w, e, r);
+	    switch(tbl->column[col_num]->column_type){
 		case STRING: if(q.compare(threshold) == 0) where_row.push_back(i); break;
 		case DOUBLE: if(w==Util::strToDouble(threshold)) where_row.push_back(i); break;
 		case UINT: if(e==Util::strToUint(threshold)) where_row.push_back(i); break;
@@ -167,8 +176,8 @@ void Table::where(int col_num, char op, string threshold){
     else if(op == '>'){
 	for(int i=0; i<record_num; i++){
 	    string q; double w; unsigned int e; int r;
-	    column[col_num]->getValue(i, q, w, e, r);
-	    switch(column[col_num]->column_type){
+	    tbl->column[col_num]->getValue(i, q, w, e, r);
+	    switch(tbl->column[col_num]->column_type){
 		case STRING: if(q.compare(threshold) > 0) where_row.push_back(i); break;
 		case DOUBLE: if(w > Util::strToDouble(threshold)) where_row.push_back(i); break;
 		case UINT: if(e > Util::strToUint(threshold)) where_row.push_back(i); break;
@@ -179,8 +188,8 @@ void Table::where(int col_num, char op, string threshold){
     else if(op == '<'){
 	for(int i=0; i<record_num; i++){
 	    string q; double w; unsigned int e; int r;
-	    column[col_num]->getValue(i, q, w, e, r);
-	    switch(column[col_num]->column_type){
+	    tbl->column[col_num]->getValue(i, q, w, e, r);
+	    switch(tbl->column[col_num]->column_type){
 		case STRING: if(q.compare(threshold) < 0) where_row.push_back(i); break;
 		case DOUBLE: if(w < Util::strToDouble(threshold)) where_row.push_back(i); break;
 		case UINT: if(e < Util::strToUint(threshold)) where_row.push_back(i); break;
@@ -194,14 +203,19 @@ void Table::where(int col_num, char op, string threshold){
     }
 }
 
-void Table::where_and(int col_num, char op, string threshold){
-    vector<int> erase_list; 
+void Table::where_and(int table_num, int col_num, char op, string threshold){
+    vector<int> erase_list;
+    Table* tbl=this;
+    if(jointbl_ptr.size() != 0){
+	tbl = jointbl_ptr[table_num];
+    }
+
     if(op =='='){
 	for(auto j = where_row.begin(); j != where_row.end(); ++j)
 	{
     	    string q; double w; unsigned int e; int r;
-	    column[col_num]->getValue(*j, q, w, e, r);
-	    switch(column[col_num]->column_type){
+	    tbl->column[col_num]->getValue(*j, q, w, e, r);
+	    switch(tbl->column[col_num]->column_type){
 		case STRING: if(q.compare(threshold) != 0) erase_list.push_back(*j); break;
 		case DOUBLE: if(w != Util::strToDouble(threshold)) erase_list.push_back(*j); break;
 		case UINT: if(e != Util::strToUint(threshold)) erase_list.push_back(*j); break;
@@ -213,8 +227,8 @@ void Table::where_and(int col_num, char op, string threshold){
 	for(auto j = where_row.begin(); j != where_row.end(); ++j)
 	{
     	    string q; double w; unsigned int e; int r;
-	    column[col_num]->getValue(*j, q, w, e, r);
-	    switch(column[col_num]->column_type){
+	    tbl->column[col_num]->getValue(*j, q, w, e, r);
+	    switch(tbl->column[col_num]->column_type){
 		case STRING: if(q.compare(threshold) <= 0) erase_list.push_back(*j); break;
 		case DOUBLE: if(w <= Util::strToDouble(threshold)) erase_list.push_back(*j); break;
 		case UINT: if(e <= Util::strToUint(threshold)) erase_list.push_back(*j); break;
@@ -226,8 +240,8 @@ void Table::where_and(int col_num, char op, string threshold){
 	for(auto j = where_row.begin(); j != where_row.end(); ++j)
 	{
     	    string q; double w; unsigned int e; int r;
-	    column[col_num]->getValue(*j, q, w, e, r);
-	    switch(column[col_num]->column_type){
+	    tbl->column[col_num]->getValue(*j, q, w, e, r);
+	    switch(tbl->column[col_num]->column_type){
 		case STRING: if(q.compare(threshold) >= 0) erase_list.push_back(*j); break;
 		case DOUBLE: if(w >= Util::strToDouble(threshold)) erase_list.push_back(*j); break;
 		case UINT: if(e >= Util::strToUint(threshold)) erase_list.push_back(*j); break;
@@ -242,14 +256,20 @@ void Table::where_and(int col_num, char op, string threshold){
     }
 }
 
-void Table::where_or(int col_num, char op, string threshold){
+void Table::where_or(int table_num, int col_num, char op, string threshold){
     vector<int> add_list; 
+    Table* tbl = this;
+    if(jointbl_ptr.size() != 0){
+	tbl = jointbl_ptr[table_num];
+    }
+    
+    
     if(op =='='){
 	for(int j = 0; j < record_num; j++)
 	{
     	    string q; double w; unsigned int e; int r;
-	    column[col_num]->getValue(j, q, w, e, r);
-	    switch(column[col_num]->column_type){
+	    tbl->column[col_num]->getValue(j, q, w, e, r);
+	    switch(tbl->column[col_num]->column_type){
 		case STRING: if(q.compare(threshold) == 0) add_list.push_back(j); break;
 		case DOUBLE: if(w == Util::strToDouble(threshold)) add_list.push_back(j); break;
 		case UINT: if(e == Util::strToUint(threshold)) add_list.push_back(j); break;
@@ -261,8 +281,8 @@ void Table::where_or(int col_num, char op, string threshold){
 	for(int j = 0; j < record_num; j++)
 	{
     	    string q; double w; unsigned int e; int r;
-	    column[col_num]->getValue(j, q, w, e, r);
-	    switch(column[col_num]->column_type){
+	    tbl->column[col_num]->getValue(j, q, w, e, r);
+	    switch(tbl->column[col_num]->column_type){
 		case STRING: if(q.compare(threshold) > 0) add_list.push_back(j); break;
 		case DOUBLE: if(w > Util::strToDouble(threshold)) add_list.push_back(j); break;
 		case UINT: if(e > Util::strToUint(threshold)) add_list.push_back(j); break;
@@ -274,8 +294,8 @@ void Table::where_or(int col_num, char op, string threshold){
 	for(int j = 0; j < record_num; j++)
 	{
     	    string q; double w; unsigned int e; int r;
-	    column[col_num]->getValue(j, q, w, e, r);
-	    switch(column[col_num]->column_type){
+	    tbl->column[col_num]->getValue(j, q, w, e, r);
+	    switch(tbl->column[col_num]->column_type){
 		case STRING: if(q.compare(threshold) < 0) add_list.push_back(j); break;
 		case DOUBLE: if(w < Util::strToDouble(threshold)) add_list.push_back(j); break;
 		case UINT: if(e < Util::strToUint(threshold)) add_list.push_back(j); break;
@@ -295,15 +315,99 @@ void Table::where_or(int col_num, char op, string threshold){
 void Table::Join(Table *t1, Table *t2, int c1, int c2, int printRecord, bool isFirst){
 
     // if second join
-    if(!isFirst){ t1 = this;
+    if(!isFirst){
 	//TODO: implement the secondary join	
 	jointbl_ptr.push_back(t2);
-	joincol_num.push_back(c2);	
-	
+	joincol_num.push_back(c2);
+	// 1. make transmap of related two columns.
+    	TransMap transmap = Column::makeHashTable(t1->column[c1], t2->column[c2]);
+    	TransMap reverse_transmap = Column::makeHashTable(t2->column[c2], t1->column[c1]);
+    	unordered_map<unsigned int, vector<int>> mid_storage; // not used after Join
+    	//vector<pair<int, int>> record_set; //TODO: change the ds to vector<vector<int>>
 
-
-	return;
+	for(auto it = transmap.begin(); it!=transmap.end(); ++it){
+	    mid_storage.insert({it->first, vector<int>{}});
 	}
+	
+	//TODO: optimization : you shouldn't traverse whole table records but record_set
+	int col_index = 0;
+	for(auto jointbl_ptr_it : jointbl_ptr){
+	    if(jointbl_ptr_it == t1) break;
+	    col_index++;
+	}
+
+	//2. make mid_storage of latter column.
+	
+	for(int i=0; i<t2->record_num; i++){
+	    auto it = reverse_transmap.find(t2->column[c2]->getRawFromIndex(i));
+	    if(it==reverse_transmap.end()) continue;
+	    else mid_storage[it->second].push_back(i);
+	}
+	
+	// make record_set
+	int ii=0;
+	vector<vector<int>> ret;
+
+	for(auto it=record_set.begin(); it!=record_set.end(); ++it){
+	    int c1_index = (*it)[col_index]; // c1's record number of record set
+	    unsigned int c1_bitValue = jointbl_ptr[col_index]->column[col_index]->getRawFromIndex(c1_index);
+	    for(auto it_1=mid_storage.begin(); it_1 != mid_storage.end(); ++it_1){
+		if(it_1->first == c1_bitValue){
+		    for(auto it_2=it_1->second.begin(); it_2 != it_1->second.end(); ++it_2)
+		    	{
+			    ret.push_back(vector<int> {});
+			    for(int iii: *it){
+			    ret[ii].push_back(iii);
+			    }
+			    ret[ii].push_back(*it_2);
+			    ii++;
+			}
+		}
+	    }
+	}
+	
+	record_set.clear();
+	record_set = ret;
+	record_num = record_set.size();
+
+
+	int _printRecord = printRecord < record_set.size() ? printRecord : record_set.size();	
+	int i =0;
+	// print the join record index set
+	cout << "Join record index set: " << endl;
+	for(auto rs_it1 = record_set.begin(); i<_printRecord; i++) {
+	    cout << "[" ;
+	    for (auto rs_it2 = rs_it1->begin(); rs_it2 != rs_it1->end(); ++rs_it2){
+		cout << *rs_it2 << ", ";
+	    }
+	    cout << "]" << endl;
+	    rs_it1++;
+	}
+	
+	// print the join result
+	cout << " Join Result: " << endl;
+	i = 0;
+	string s;
+    	double d;
+	unsigned int u;
+	int z;
+	t1->printColName(false);
+	cout << " || ";
+	t2->printColName(true);
+	for(auto rs_it1 = record_set.begin(); i<_printRecord; i++){
+	    for(auto rs_it2 = rs_it1->begin(); rs_it2 != rs_it1->end(); ++rs_it2){
+		for(auto join_it: jointbl_ptr){
+		    join_it->getRecord(*rs_it2, false);
+		    cout << " || ";
+		    rs_it2++;
+		}
+		cout << endl;
+		rs_it1++;
+		break;
+	    }
+	}
+    return;
+}
 	
     	jointbl_ptr.push_back(t1);
 	jointbl_ptr.push_back(t2);
@@ -314,8 +418,8 @@ void Table::Join(Table *t1, Table *t2, int c1, int c2, int printRecord, bool isF
     	TransMap reverse_transmap = Column::makeHashTable(t2->column[c2], t1->column[c1]);
 	TransMap::iterator it;
     	unordered_map<unsigned int, inter_set> mid_storage; // not used after Join
-    	vector<pair<int, int>> record_set; //TODO: change the ds to vector<vector<int>>
-		  
+    	//vector<pair<int, int>> record_set; //TODO: change the ds to vector<vector<int>>
+
 	for(it = transmap.begin(); it!=transmap.end(); ++it){
 	    mid_storage.insert({it->first, inter_set()});
 	}
@@ -331,13 +435,19 @@ void Table::Join(Table *t1, Table *t2, int c1, int c2, int printRecord, bool isF
 	    if(it==reverse_transmap.end()) continue;
 	    else mid_storage[it->second].c2_records.push_back(i);
 	}
+
 	// make record_set
 	unordered_map<unsigned int, inter_set>::iterator mid_it;
+	int ii=0;
 	for(mid_it = mid_storage.begin(); mid_it != mid_storage.end(); ++mid_it){
 	    inter_set temp = mid_it->second;
 	    for(auto c1_it = temp.c1_records.begin(); c1_it != temp.c1_records.end(); ++c1_it){
 		for(auto c2_it=temp.c2_records.begin(); c2_it != temp.c2_records.end(); ++c2_it){
-		    record_set.push_back({*c1_it, *c2_it});
+		    //record_set.push_back({*c1_it, *c2_it});
+		    record_set.push_back(vector<int> {});
+		    record_set[ii].push_back(*c1_it);
+		    record_set[ii].push_back(*c2_it);
+		    ii++;
 		}
 	    }
 	}
@@ -345,9 +455,13 @@ void Table::Join(Table *t1, Table *t2, int c1, int c2, int printRecord, bool isF
 	int i =0;
 	// print the join record index set
 	cout << "Join record index set: " << endl;
-	for(auto rs_it = record_set.begin(); i<_printRecord; i++) {	
-	    cout << "[" << rs_it->first << ", " << rs_it->second << "]" << endl;
-	    rs_it++;
+	for(auto rs_it1 = record_set.begin(); i<_printRecord; i++) {
+	    cout << "[" ;
+	    for (auto rs_it2 = rs_it1->begin(); rs_it2 != rs_it1->end(); ++rs_it2){
+		cout << *rs_it2 << ", ";
+	    }
+	    cout << "]" << endl;
+	    rs_it1++;
 	}
 	
 	// print the join result
@@ -360,12 +474,34 @@ void Table::Join(Table *t1, Table *t2, int c1, int c2, int printRecord, bool isF
 	t1->printColName(false);
 	cout << " || ";
 	t2->printColName(true);
-	for(auto rs_it = record_set.begin(); i<_printRecord; i++){
-	    t1->getRecord(rs_it->first, false);
-	    cout << " || ";
-	    t2->getRecord(rs_it->second);
-	    rs_it++;
+	for(auto rs_it1 = record_set.begin(); i<_printRecord; i++){
+	    for(auto rs_it2 = rs_it1->begin(); rs_it2 != rs_it1->end(); ++rs_it2){
+		for(auto join_it: jointbl_ptr){
+		    join_it->getRecord(*rs_it2, false);
+		    cout << " || ";
+		    rs_it2++;
+		}
+		cout << endl;
+		rs_it1++;
+		break;
+	    }
 	}
+}
+
+void Table::reset(){
+    select_column.clear();
+    where_row.clear();
+    jointbl_ptr.clear();
+    joincol_num.clear();
+    record_set.clear();
+    record_num = column[0]->record_num;
+
+    for(int i=0; i<col_num; i++){
+	select_column.push_back(i);
+    }
+    for(int i=0; i<record_num; i++){
+	where_row.push_back(i);
+    }
 }
 
 

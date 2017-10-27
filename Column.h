@@ -36,6 +36,7 @@ class Column {
     unsigned int	getRawFromIndex(int index);
     unsigned int 	getRight(string left_val);
     string 		getLeft(unsigned int right_val);
+    vector<int>		getIndexes(unsigned int right_val);
     void    		printMap();
     int	    		getMem();
     static TransMap 	makeHashTable(Column* c1, Column* c2);

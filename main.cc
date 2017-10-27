@@ -22,7 +22,7 @@ start = usage.ru_utime;
 /* table load */
 Table* t_sensors = new Table(sensors_name, 42);
 Table* t_entities = new Table(entities_name, 21);
-//Table* t_sample_game = new Table(sample_game_name, 1048576);
+Table* t_sample_game = new Table(sample_game_name, 1048576);
 
 getrusage(RUSAGE_SELF, &usage);
 end = usage.ru_utime;
@@ -31,31 +31,68 @@ cout << "Use memory with table load: " << usage.ru_maxrss/(1024*1024) << " Mbyte
 
 
 /* table select */
-t_entities->select(vector<int> {0,1,2});
-/* where query */
-//vector<int> where_query = (t_entities->where_and(vector<int> {2, 1}, vector<char> {'=','='}, vector<string> {"1", "\"Ball 1\""}));
-t_entities->where(2, '>', "1");
-t_entities->where_or(1, '>', "\"Ball 1\"");
+//query 1-1
+getrusage(RUSAGE_SELF, &usage);
+start = usage.ru_utime;
+Table* join1_1 = new Table();
+join1_1->Join(t_sample_game, t_sensors, 0, 0, 10);
+getrusage(RUSAGE_SELF, &usage);
+end = usage.ru_utime;
+cout << "Query 1-1 time: " << (end.tv_sec+end.tv_usec/100000.0) - (start.tv_sec + start.tv_usec/100000.0) << " sec" << endl;
+delete join1_1;
+t_sample_game->reset();
+t_sensors->reset();
+
+//query 2-1
+getrusage(RUSAGE_SELF, &usage);
+start = usage.ru_utime;
+Table* join2_1 = new Table();
+join2_1->Join(t_sample_game, t_sensors, 0, 0, 10);
+join2_1->where(1, 2, '=', "1");
+join2_1->where_and(0, 5, '>', "5000000");
+getrusage(RUSAGE_SELF, &usage);
+end = usage.ru_utime;
+cout << "Query 2-1 time: " << (end.tv_sec+end.tv_usec/100000.0) - (start.tv_sec + start.tv_usec/100000.0) << " sec" << endl;
+delete join2_1;
+t_sample_game->reset();
+t_sensors->reset();
+
+//query 2-2
+getrusage(RUSAGE_SELF, &usage);
+start = usage.ru_utime;
+Table* join2_2 = new Table();
+join2_2->Join(t_sample_game, t_sensors, 0, 0, 10);
+join2_2->where(1, 2, '=', "1");
+join2_2->where_and(0, 5, '>', "5000000");
+getrusage(RUSAGE_SELF, &usage);
+end = usage.ru_utime;
+cout << "Query 2-2 time: " << (end.tv_sec+end.tv_usec/100000.0) - (start.tv_sec + start.tv_usec/100000.0) << " sec" << endl;
+delete join2_2;
+t_sample_game->reset();
+t_sensors->reset();
+
+//query 3-1
+//Table* join3_1 = new Table();
+//join3_1->Join(
+
+
+t_entities->where(0,2, '>', "1");
+t_entities->where_or(0,1, '>', "\"Ball 1\"");
 t_entities->getResult();
 
 /*Table join*/
+/*
 Table* join_table = new Table();
-join_table->Join(t_sensors, t_entities, 2, 2, 1600);
-//join_table->Join(
-//join_table->materialize(t_sensors, t_entities);
-
-//t_sample_game->sid_40();
-//t_sample_game->v_less_5000000();
-//t_sample_game->col_1->edict->print_record(10,20, false);
-//select('*', t_sample_game->col_0->equal(40), t_sample_game);
-
-//delete t_sample_game;
-
+join_table->Join(t_sample_game, t_sensors, 0, 0, 20);
+*/
+//Table* join_table2 = new Table();
+//join_table2->Join(t_sample_game, t_sensors, 0, 0, 100);
 
 delete t_sensors;
 delete t_entities;
-//delete t_sample_game;
+delete t_sample_game;
 //delete join_table;
+//delete join_table2;
 //getrusage(RUSAGE_SELF, &usage);
 //cout << "Use memory after deleting: " << usage.ru_maxrss/(1024*1024) << " Mbytes" <<  endl;
 

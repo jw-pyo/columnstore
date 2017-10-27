@@ -127,7 +127,15 @@ string Column::getLeft(unsigned int right_val){ //only string
 	    default: cout << "Nothing returned in getRight(" << right_val << ")." << endl; assert(false);
 	}
 }
-    
+
+vector<int> Column::getIndexes(unsigned int right_val){
+    vector<int> ret;
+    for(int i=0; i<record_num; i++){
+	if(getRawFromIndex(i) == right_val) ret.push_back(i);
+    }
+    return ret;
+}
+
 void Column::printMap() {
     	cout << column_name << "<" << column_type << ">" << " dictionary: " << endl;
 	switch(column_type) {
