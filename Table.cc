@@ -8,11 +8,13 @@ isEmpty = true;
 where_row = vector<int> {};
 jointbl_ptr = vector<Table*> {};
 joincol_num = vector<int> {};
+//static_i = 0;
 };
 
 Table::Table(vector<string> table_info, int record_num_){
     //set the metadata
     isEmpty = false;
+  //  static_i = 0;
     string datapath = table_info[0];
     t_name = table_info[1];
     record_num = record_num_;
@@ -177,7 +179,7 @@ void Table::getResult(int recordNumber){
 	}
     }
 }
-
+/*
 void Table::putJoinTable(Table* t, int col){
     jointbl_ptr.push_back(t);
     joincol_num.push_back(col);
@@ -185,7 +187,7 @@ void Table::putJoinTable(Table* t, int col){
 void Table::outJoinTable(){
     jointbl_ptr.clear();
     joincol_num.clear();
-}
+}*/
 void Table::select(vector<int> column_list){
     select_column.clear();
     for(auto it=column_list.begin(); it!= column_list.end(); ++it){
@@ -285,7 +287,7 @@ void Table::where(int table_num, int col_num, char op, string threshold){
     }
     }
 
-    cout << "where row from " << where_row[0] << " to " << where_row[where_row.size() -1] << endl;
+    //cout << "where row from " << where_row[0] << " to " << where_row[where_row.size() -1] << endl;
 }
 void Table::where_and(int table_num, int col_num, char op, string threshold){
     vector<int> erase_list;
@@ -391,7 +393,7 @@ void Table::where_and(int table_num, int col_num, char op, string threshold){
     }
 
 
-    cout << "where row from " << where_row[0] << " to " << where_row[where_row.size() -1] << endl;
+    //cout << "where row from " << where_row[0] << " to " << where_row[where_row.size() -1] << endl;
 }
 
 //DEPRECATED
@@ -451,10 +453,11 @@ void Table::where_or(int table_num, int col_num, char op, string threshold){
     sort(where_row.begin(), where_row.end());
 }
 
-void Table::Join(Table *t1, Table *t2, int c1, int c2, int printRecord, bool isFirst){
+void Table::Join(Table *t1, Table *t2, int c1, int c2, bool isFirst){
 
     // if second join
-    if(!isFirst){
+    if(!isFirst)
+    {
 	//TODO: implement the secondary join	
 	jointbl_ptr.push_back(t2);
 	joincol_num.push_back(c2);
@@ -464,13 +467,15 @@ void Table::Join(Table *t1, Table *t2, int c1, int c2, int printRecord, bool isF
     	unordered_map<unsigned int, vector<int>> mid_storage; // not used after Join
     	//vector<pair<int, int>> record_set; //TODO: change the ds to vector<vector<int>>
 
-	for(auto it = transmap.begin(); it!=transmap.end(); ++it){
+	for(auto it = transmap.begin(); it!=transmap.end(); ++it)
+	{
 	    mid_storage.insert({it->first, vector<int>{}});
 	}
 	
 	//TODO: optimization : you shouldn't traverse whole table records but record_set
 	int col_index = 0;
-	for(auto jointbl_ptr_it : jointbl_ptr){
+	for(auto jointbl_ptr_it : jointbl_ptr)
+	{
 	    if(jointbl_ptr_it == t1) break;
 	    col_index++;
 	}
@@ -478,7 +483,8 @@ void Table::Join(Table *t1, Table *t2, int c1, int c2, int printRecord, bool isF
 	//2. make mid_storage of latter column.
 	
 	//for(int i=0; i<t2->record_num; i++){
-	for(int i: t2->where_row){
+	for(int i: t2->where_row)
+	{
 	    auto it = reverse_transmap.find(t2->column[c2]->getRawFromIndex(i));
 	    if(it==reverse_transmap.end()) continue;
 	    else mid_storage[it->second].push_back(i);
@@ -488,67 +494,35 @@ void Table::Join(Table *t1, Table *t2, int c1, int c2, int printRecord, bool isF
 	int ii=0;
 	vector<vector<int>> ret;
 
-	for(auto it=record_set.begin(); it!=record_set.end(); ++it){
+	for(auto it=record_set.begin(); it!=record_set.end(); ++it)
+	{
 	    int c1_index = (*it)[col_index]; // c1's record number of record set
 	    unsigned int c1_bitValue = jointbl_ptr[col_index]->column[col_index]->getRawFromIndex(c1_index);
-	    for(auto it_1=mid_storage.begin(); it_1 != mid_storage.end(); ++it_1){
-		if(it_1->first == c1_bitValue){
+	    for(auto it_1=mid_storage.begin(); it_1 != mid_storage.end(); ++it_1)
+	    {
+		if(it_1->first == c1_bitValue)
+		{
 		    for(auto it_2=it_1->second.begin(); it_2 != it_1->second.end(); ++it_2)
-		    	{
-			    ret.push_back(vector<int> {});
-			    for(int iii: *it){
+	    	    {
+    			ret.push_back(vector<int> {});
+			for(int iii: *it)
+			{
 			    ret[ii].push_back(iii);
-			    }
-			    ret[ii].push_back(*it_2);
-			    ii++;
-			}
+		    	}
+	    		ret[ii].push_back(*it_2);
+    			ii++;
+		    }
 		}
 	    }
 	}
 	
 	record_set = ret;
 	record_num = record_set.size();
-
-
-	int _printRecord = printRecord < record_set.size() ? printRecord : record_set.size();	
-	int i =0;
-	// print the join record index set
-	cout << "Join record index set: " << endl;
-	for(auto rs_it1 = record_set.begin(); i<_printRecord; i++) {
-	    cout << "[" ;
-	    for (auto rs_it2 = rs_it1->begin(); rs_it2 != rs_it1->end(); ++rs_it2){
-		cout << *rs_it2 << ", ";
-	    }
-	    cout << "]" << endl;
-	    rs_it1++;
-	}
+    	return;
+    }
 	
-	// print the join result
-	cout << " Join Result: " << endl;
-	i = 0;
-	string s;
-    	double d;
-	unsigned int u;
-	int z;
-	t1->printColName(false);
-	cout << " || ";
-	t2->printColName(true);
-	for(auto rs_it1 = record_set.begin(); i<_printRecord; i++){
-	    for(auto rs_it2 = rs_it1->begin(); rs_it2 != rs_it1->end(); ++rs_it2){
-		for(auto join_it: jointbl_ptr){
-		//    join_it->getRecord(*rs_it2, false);
-		//    cout << " || ";
-		    rs_it2++;
-		}
-		cout << endl;
-		rs_it1++;
-		break;
-	    }
-	}
-    return;
-     }
-	
-else {
+    else 
+    {  //first join
 
 	jointbl_ptr.push_back(t1);
 	jointbl_ptr.push_back(t2);
@@ -561,19 +535,22 @@ else {
     	unordered_map<unsigned int, inter_set> mid_storage; // not used after Join
     	//vector<pair<int, int>> record_set; //TODO: change the ds to vector<vector<int>>
 
-	for(it = transmap.begin(); it!=transmap.end(); ++it){
+	for(it = transmap.begin(); it!=transmap.end(); ++it)
+	{
 	    mid_storage.insert({it->first, inter_set()});
 	}
 
 	//for(int i=0; i< t1->record_num; i++){
-	for(int i: t1->where_row){
+	for(int i: t1->where_row)
+	{
 	    it = transmap.find(t1->column[c1]->getRawFromIndex(i));
 	    if(it==transmap.end()) continue;
 	    else mid_storage[it->first].c1_records.push_back(i);
 	}
 
 	//for(int i=0; i<t2->record_num; i++){
-	for(int i: t2->where_row){
+	for(int i: t2->where_row)
+	{
 	    it = reverse_transmap.find(t2->column[c2]->getRawFromIndex(i));
 	    if(it==reverse_transmap.end()) continue;
 	    else mid_storage[it->second].c2_records.push_back(i);
@@ -582,10 +559,13 @@ else {
 	// make record_set
 	unordered_map<unsigned int, inter_set>::iterator mid_it;
 	int ii=0;
-	for(mid_it = mid_storage.begin(); mid_it != mid_storage.end(); ++mid_it){
+	for(mid_it = mid_storage.begin(); mid_it != mid_storage.end(); ++mid_it)
+	{
 	    inter_set temp = mid_it->second;
-	    for(auto c1_it = temp.c1_records.begin(); c1_it != temp.c1_records.end(); ++c1_it){
-		for(auto c2_it=temp.c2_records.begin(); c2_it != temp.c2_records.end(); ++c2_it){
+	    for(auto c1_it = temp.c1_records.begin(); c1_it != temp.c1_records.end(); ++c1_it)
+	    {
+		for(auto c2_it=temp.c2_records.begin(); c2_it != temp.c2_records.end(); ++c2_it)
+		{
 		    //record_set.push_back({*c1_it, *c2_it});
 		    record_set.push_back(vector<int> {});
 		    record_set[ii].push_back(*c1_it);
@@ -597,44 +577,106 @@ else {
 	}
 	
 	record_num = record_set.size();
-	
-	int _printRecord = printRecord < record_num ? printRecord : record_num;	
-	int i =0;
-	// print the join record index set
-	cout << "Join record index set: " << endl;
-	for(auto rs_it1 = record_set.begin(); i<_printRecord; i++) {
-	    cout << "[" ;
-	    for (auto rs_it2 = rs_it1->begin(); rs_it2 != rs_it1->end(); ++rs_it2){
-		cout << *rs_it2 << ", ";
-	    }
-	    cout << "]" << endl;
-	    rs_it1++;
-	}
-	
-	// print the join result
-	cout << " Join Result: " << endl;
-	i = 0;
-	string s;
-    	double d;
-	unsigned int u;
-	int z;
-	t1->printColName(false);
-	cout << " || ";
-	t2->printColName(true);
-	for(auto rs_it1 = record_set.begin(); i<_printRecord; i++){
-	    for(auto rs_it2 = rs_it1->begin(); rs_it2 != rs_it1->end(); ++rs_it2){
-		for(auto join_it: jointbl_ptr){
-		//    join_it->getRecord(*rs_it2, false);
-		//    cout << " || ";
-		    rs_it2++;
-		}
-		cout << endl;
-		rs_it1++;
-		break;
-	    }
-	}
+    }
 }
 
+void Table::PartitionJoin(Table* t1, Table* t2, int c1, int c2){
+    //first join
+    high_resolution_clock::time_point begin, end;
+    begin = high_resolution_clock::now();
+    jointbl_ptr.push_back(t1);
+    jointbl_ptr.push_back(t2);
+    joincol_num.push_back(c1);
+    joincol_num.push_back(c2);
+
+    TransMap transmap = Column::makeHashTable(t1->column[c1], t2->column[c2]);
+    TransMap reverse_transmap = Column::makeHashTable(t2->column[c2], t1->column[c1]);
+    TransMap::iterator it;
+    map<unsigned int, inter_set> mid_storage; // not used after Join
+    //vector<pair<int, int>> record_set; //TODO: change the ds to vector<vector<int>>
+
+    for(it = transmap.begin(); it!=transmap.end(); ++it){
+	mid_storage.insert({it->first, inter_set()});
+    }
+
+    //cout << "I'm in thread " << no << endl;
+    //cout << "thread " << no << " : " << (int)ceil(t1->where_row.size()/4*no) << endl;
+    //cout << "thread " << no << " : " << (int)floor(t1->where_row.size()/4*(no+1)) << endl;
+    //for(int i=0; i<t2->record_num; i++){
+    for(int i: t2->where_row){
+    it = reverse_transmap.find(t2->column[c2]->getRawFromIndex(i));
+    if(it==reverse_transmap.end()) continue;
+    else mid_storage[it->second].c2_records.push_back(i);
+    }	
+	
+    thread firstThread[4];
+    thread secondThread[4];
+    for(int i=0; i<4; i++)
+    {
+	firstThread[i] = thread(&Table::firstCallback, this, ref(transmap), ref(mid_storage), ref(t1), ref(c1), i);
+    }
+    for(int i=0; i<4; i++)
+    {
+	firstThread[i].join();
+    }
+    for(int i=0; i<4; i++)
+    {
+	secondThread[i] = thread(&Table::secondCallback, this, ref(mid_storage), i);
+    }
+    for(int i=0; i<4; i++)
+    {
+	secondThread[i].join();
+    }
+    for(int i=0; i<static_i; i++){
+	where_row.push_back(i);
+    }
+    
+    // copy it: cout << duration_cast<microseconds>(high_resolution_clock::now() - begin).count()/1000000.0 << endl;
+}
+void Table::firstCallback(TransMap& transmap, map<unsigned int, inter_set>& mid_storage, Table* t1, int c1, int no){
+	int ii =(int)ceil(t1->where_row.size()/4*no);
+	int thres = (int)floor(t1->where_row.size()/4*(no+1));
+	for(int it_=t1->where_row[0 + (int)ceil(t1->where_row.size()/4*(no))]; ii <thres; ii++){
+	    auto it = transmap.find(t1->column[c1]->getRawFromIndex(it_));
+	    if(it==transmap.end()) continue;
+	    else mid_storage[it->first].c1_records.push_back(it_);
+	}
+}
+void Table::secondCallback(map<unsigned int, inter_set>& mid_storage, int no){
+	// make record_set
+	//int static_ii = 0;
+	vector<vector<int>> record_set_;
+	int from = (int)ceil(mid_storage.size()/4*no);
+	int to = (int)floor(mid_storage.size()/4*(no+1));
+	auto mid_it = mid_storage.begin();
+	advance(mid_it, from);
+	int i=0;
+	int ii=0;
+	while(i < to - from){
+	    inter_set temp = mid_it->second;
+	    for(auto c1_it = temp.c1_records.begin(); c1_it != temp.c1_records.end(); ++c1_it){
+		for(auto c2_it=temp.c2_records.begin(); c2_it != temp.c2_records.end(); ++c2_it){
+		    //record_set.push_back({*c1_it, *c2_it});
+		   // mtx.lock();
+		    record_set_.push_back(vector<int> {});
+		    record_set_[ii].push_back(*c1_it);
+		    record_set_[ii].push_back(*c2_it);
+		    ii++;
+		    //static_i++;
+		   // mtx.unlock();
+		    //where_row.push_back(static_i++);
+		    
+		}
+	    }
+		i++;
+		mid_it++;
+	}
+	mtx.lock();
+	record_set.insert(end(record_set), begin(record_set_), end(record_set_));
+	mtx.unlock();
+	mtx.lock();
+	static_i += record_set_.size();
+	mtx.unlock();
 }
 
 void Table::reset(){
@@ -676,4 +718,19 @@ void Table::reset(){
 }
 */
 
-//void Table::getMemSize();
+void Table::getTblMemory(){
+    int ret = 0;
+    for(int i=0; i<col_num; i++){
+	ret += column[i]->getColMemory();
+    }
+    ret += sizeof(string) * column_name.size();
+    ret += sizeof(string) * column_type.size();
+    ret += sizeof(int) * select_column.size();
+    ret += sizeof(int) * where_row.size();
+    ret += sizeof(Table*) * jointbl_ptr.size();
+    ret += sizeof(int) * joincol_num.size();
+    ret += sizeof(int) * jointbl_ptr.size()* record_set.size();
+    cout << "----------------------MEMORY------------------------" << endl;
+    cout << "Table " << t_name <<"'s memory: " << ret/1024.0/1024.0 << "M bytes. " << endl;
+    cout << "----------------------------------------------------" << endl;
+};

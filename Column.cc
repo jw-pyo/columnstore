@@ -147,6 +147,18 @@ void Column::printMap() {
     	}
 }
 
+int Column::getColMemory(){
+
+    int ret = (int)ceil(bit_num * record_num / 8.0); // PackedArray
+    switch(column_type) { // dict and set_dict
+	case STRING : ret += (sizeof(string)+sizeof(unsigned int))*dict.size() + sizeof(string) * set_dict.size(); break; 
+	case DOUBLE : ret += (sizeof(double)+sizeof(unsigned int))*dict2.size() + sizeof(double) * set_dict2.size(); break; 
+	case UINT : ret += (sizeof(unsigned int)+sizeof(unsigned int))*dict3.size() + sizeof(unsigned int) * set_dict3.size(); break; 
+	case INT : ret += (sizeof(int)+sizeof(unsigned int))*dict4.size() + sizeof(int) * set_dict4.size(); break;
+    }
+    return ret;
+}
+
 //assume c1 and c2 are same domain.
 TransMap Column::makeHashTable(Column* c1, Column* c2) {
     TransMap ret;

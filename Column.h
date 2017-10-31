@@ -38,7 +38,7 @@ class Column {
     string 		getLeft(unsigned int right_val);
     vector<int>		getIndexes(unsigned int right_val);
     void    		printMap();
-    int	    		getMem();
+    int	    		getColMemory();
     static TransMap 	makeHashTable(Column* c1, Column* c2);
     
     typedef boost::bimap<string, unsigned int> bimap_t;
