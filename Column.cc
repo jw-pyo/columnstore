@@ -3,6 +3,9 @@
 using namespace std;
 
 //template <typename T>
+Column::Column(){
+};
+
 Column::Column(string column_name_, string column_type_, int record_num_, bool lossy) {
 	    
 	//assume data are all in.
@@ -57,7 +60,7 @@ void Column::push_setdict(string val) {
     
 void Column::make_dict(){
         // NULL:0 set is always contained in dict.
-    	unsigned int i=0;
+    	unsigned int i=0; //not use 0
 	switch(column_type) {
 	    case STRING : for(auto it=set_dict.begin(); it!=set_dict.end(); it++) dict.insert({(*it), i++}); break;
 	    case DOUBLE : for(auto it=set_dict2.begin(); it!=set_dict2.end(); it++) dict2.insert({(*it), i++}); break;

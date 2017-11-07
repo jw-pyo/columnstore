@@ -19,11 +19,13 @@
 
 using namespace std;
 using namespace std::chrono;
+
 typedef struct inter_set{
     inter_set(){};
     vector<int> c1_records;
     vector<int> c2_records;
 } inter_set;
+typedef unordered_map<unsigned int, inter_set> MidStor;
 
 static int static_i=0;
 /*
@@ -45,16 +47,15 @@ class Table {
        void getResult(int recordNumber);
        
        /*----ABOUT QUERIES----*/
-       //void putJoinTable(Table* t, int col);
-       //void outJoinTable();
-       void where_or(int table_num, int col_num, char op, string threshold); //DEPRECATED
+       void where_or(int table_num, int col_num, char op, string threshold); //
        void select(vector<int> column_list);
        void where(int table_num, int col_num, char op, string threshold);
        void where_and(int table_num, int col_num, char op, string threshold);
        void Join(Table* t1, Table* t2, int c1, int c2, bool isFirst=true);
        void PartitionJoin(Table* t1, Table* t2, int c1, int c2);
-       void firstCallback(TransMap& transmap, map<unsigned int, inter_set>& mid_storage, Table* t1, int c1, int no);
-       void secondCallback(map<unsigned int, inter_set>& mid_storage, int no);
+       void firstCallback(TransMap& transmap, MidStor& mid_storage, Table* t1, int c1, int no);
+       void _firstCallback(TransMap& reverse_transmap, MidStor& mid_storage, Table* t2, int c2, int no);
+       void secondCallback(MidStor& mid_storage, int no);
        
        /*----ABOUT INFO----*/ 
        void reset();

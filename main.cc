@@ -40,7 +40,7 @@ t_sample_game->getTblMemory();
 
 begin = high_resolution_clock::now();
 Table* join1_1 = new Table();
-join1_1->Join(t_sample_game, t_sensors, 0, 0, 10);
+join1_1->Join(t_sample_game, t_sensors, 0, 0);
 join1_1->getResult(5);
 end = high_resolution_clock::now();
 duration = duration_cast<microseconds>(end-begin).count()/1000000.0;
@@ -53,21 +53,9 @@ t_sensors->reset();
 //1-1 partition();
 begin = high_resolution_clock::now();
 Table* part1_1 = new Table();
-//Table* part1_2 = new Table();
-//Table* part1_3 = new Table();
-//Table* part1_4 = new Table();
 
 part1_1->PartitionJoin(t_sample_game, t_sensors, 0, 0);
 part1_1->getResult(5);
-/*thread thread1(&Table::PartitionJoin, part1_1, 0, static_i, t_sample_game, t_sensors, 0, 0, 10, true);
-thread thread2(&Table::PartitionJoin, part1_1, 1, static_i,t_sample_game, t_sensors, 0, 0, 10, true);
-thread thread3(&Table::PartitionJoin, part1_1, 2, static_i,t_sample_game, t_sensors, 0, 0, 10, true);
-thread thread4(&Table::PartitionJoin, part1_1, 3, static_i,t_sample_game, t_sensors, 0, 0, 10, true);
-thread1.join();
-thread2.join();
-thread3.join();
-thread4.join();
-*/
 end = high_resolution_clock::now();
 duration = duration_cast<microseconds>(end-begin).count()/1000000.0;
 cout << "-------------------TIME--------------------" << endl;
@@ -234,8 +222,6 @@ t_entities->reset();
 delete t_sensors;
 delete t_entities;
 delete t_sample_game;
-//getrusage(RUSAGE_SELF, &usage);
-//cout << "Use memory after deleting: " << usage.ru_maxrss/(1024*1024) << " Mbytes" <<  endl;
 
 return 0;
 }

@@ -8,6 +8,9 @@ isEmpty = true;
 where_row = vector<int> {};
 jointbl_ptr = vector<Table*> {};
 joincol_num = vector<int> {};
+for(int i=0; i<col_num; i++){
+    column[i] = new Column();
+}
 //static_i = 0;
 };
 
@@ -531,11 +534,10 @@ void Table::Join(Table *t1, Table *t2, int c1, int c2, bool isFirst){
 
     	TransMap transmap = Column::makeHashTable(t1->column[c1], t2->column[c2]);
     	TransMap reverse_transmap = Column::makeHashTable(t2->column[c2], t1->column[c1]);
-	TransMap::iterator it;
-    	unordered_map<unsigned int, inter_set> mid_storage; // not used after Join
+    	MidStor mid_storage; // not used after Join
     	//vector<pair<int, int>> record_set; //TODO: change the ds to vector<vector<int>>
 
-	for(it = transmap.begin(); it!=transmap.end(); ++it)
+	for(auto it = transmap.begin(); it!=transmap.end(); ++it)
 	{
 	    mid_storage.insert({it->first, inter_set()});
 	}
@@ -543,7 +545,7 @@ void Table::Join(Table *t1, Table *t2, int c1, int c2, bool isFirst){
 	//for(int i=0; i< t1->record_num; i++){
 	for(int i: t1->where_row)
 	{
-	    it = transmap.find(t1->column[c1]->getRawFromIndex(i));
+	    auto it = transmap.find(t1->column[c1]->getRawFromIndex(i));
 	    if(it==transmap.end()) continue;
 	    else mid_storage[it->first].c1_records.push_back(i);
 	}
@@ -551,15 +553,14 @@ void Table::Join(Table *t1, Table *t2, int c1, int c2, bool isFirst){
 	//for(int i=0; i<t2->record_num; i++){
 	for(int i: t2->where_row)
 	{
-	    it = reverse_transmap.find(t2->column[c2]->getRawFromIndex(i));
+	    auto it = reverse_transmap.find(t2->column[c2]->getRawFromIndex(i));
 	    if(it==reverse_transmap.end()) continue;
 	    else mid_storage[it->second].c2_records.push_back(i);
 	}
 
 	// make record_set
-	unordered_map<unsigned int, inter_set>::iterator mid_it;
 	int ii=0;
-	for(mid_it = mid_storage.begin(); mid_it != mid_storage.end(); ++mid_it)
+	for(auto mid_it = mid_storage.begin(); mid_it != mid_storage.end(); ++mid_it)
 	{
 	    inter_set temp = mid_it->second;
 	    for(auto c1_it = temp.c1_records.begin(); c1_it != temp.c1_records.end(); ++c1_it)
@@ -591,31 +592,36 @@ void Table::PartitionJoin(Table* t1, Table* t2, int c1, int c2){
 
     TransMap transmap = Column::makeHashTable(t1->column[c1], t2->column[c2]);
     TransMap reverse_transmap = Column::makeHashTable(t2->column[c2], t1->column[c1]);
-    TransMap::iterator it;
-    map<unsigned int, inter_set> mid_storage; // not used after Join
-    //vector<pair<int, int>> record_set; //TODO: change the ds to vector<vector<int>>
+    MidStor mid_storage; // not used after Join
 
-    for(it = transmap.begin(); it!=transmap.end(); ++it){
+    for(auto it = transmap.begin(); it!=transmap.end(); ++it){
 	mid_storage.insert({it->first, inter_set()});
     }
+   /* 
+    for(int i: t1->where_row)
+    {
+	auto it = transmap.find(t1->column[c1]->getRawFromIndex(i));
+	if(it==transmap.end());
+	else mid_storage[it->first].c1_records.push_back(i);
+    }
 
-    //cout << "I'm in thread " << no << endl;
-    //cout << "thread " << no << " : " << (int)ceil(t1->where_row.size()/4*no) << endl;
-    //cout << "thread " << no << " : " << (int)floor(t1->where_row.size()/4*(no+1)) << endl;
-    //for(int i=0; i<t2->record_num; i++){
     for(int i: t2->where_row){
-    it = reverse_transmap.find(t2->column[c2]->getRawFromIndex(i));
-    if(it==reverse_transmap.end()) continue;
-    else mid_storage[it->second].c2_records.push_back(i);
-    }	
-	
-    thread firstThread[4];
+    	auto it = reverse_transmap.find(t2->column[c2]->getRawFromIndex(i));
+	if(it==reverse_transmap.end());
+	else mid_storage[it->second].c2_records.push_back(i);
+	}*/
+    cout << "mid_storage size: " << mid_storage.size() << endl;	
+    thread firstThread[2];
     thread secondThread[4];
-    for(int i=0; i<4; i++)
+	firstThread[0] = thread(&Table::firstCallback, this, ref(transmap), ref(mid_storage), ref(t1), ref(c1), 0);
+	firstThread[1] = thread(&Table::_firstCallback, this, ref(reverse_transmap), ref(mid_storage), ref(t2), ref(c2), 1);
+	//firstThread[2] = thread(&Table::_firstCallback, this, ref(reverse_transmap), ref(mid_storage), ref(t2), ref(c2), 0);
+	//firstThread[3] = thread(&Table::_firstCallback, this, ref(reverse_transmap), ref(mid_storage), ref(t2), ref(c2), 1);
+/*    for(int i=0; i<4; i++)
     {
 	firstThread[i] = thread(&Table::firstCallback, this, ref(transmap), ref(mid_storage), ref(t1), ref(c1), i);
-    }
-    for(int i=0; i<4; i++)
+    }*/
+    for(int i=0; i<2; i++)
     {
 	firstThread[i].join();
     }
@@ -629,26 +635,47 @@ void Table::PartitionJoin(Table* t1, Table* t2, int c1, int c2){
     }
     for(int i=0; i<static_i; i++){
 	where_row.push_back(i);
+	//cout << i << ": where_Row" << endl;
     }
-    
+
+   record_num = record_set.size();
     // copy it: cout << duration_cast<microseconds>(high_resolution_clock::now() - begin).count()/1000000.0 << endl;
 }
-void Table::firstCallback(TransMap& transmap, map<unsigned int, inter_set>& mid_storage, Table* t1, int c1, int no){
-	int ii =(int)ceil(t1->where_row.size()/4*no);
-	int thres = (int)floor(t1->where_row.size()/4*(no+1));
-	for(int it_=t1->where_row[0 + (int)ceil(t1->where_row.size()/4*(no))]; ii <thres; ii++){
-	    auto it = transmap.find(t1->column[c1]->getRawFromIndex(it_));
-	    if(it==transmap.end()) continue;
-	    else mid_storage[it->first].c1_records.push_back(it_);
+void Table::firstCallback(TransMap& transmap, MidStor& mid_storage, Table* t1, int c1, int no){
+    //int end = (int)ceil(t1->where_row.size()/2.0*(no+1));
+    int end = t1->where_row.size();
+    for(int start=0; start < end; start++)
+    {
+	auto it = transmap.find(t1->column[c1]->getRawFromIndex(t1->where_row[start]));
+	if(it==transmap.end());
+	else{ 
+	    mid_storage[it->first].c1_records.push_back(t1->where_row[start]);
 	}
+    }
+
+
 }
-void Table::secondCallback(map<unsigned int, inter_set>& mid_storage, int no){
+void Table::_firstCallback(TransMap& reverse_transmap, MidStor& mid_storage, Table* t2, int c2, int no){
+    //int end = (int)ceil(t2->where_row.size()/2.0*(no+1));
+    int end = t2->where_row.size();
+    for(int start=0; start < end; start++)
+    {
+	auto it = reverse_transmap.find(t2->column[c2]->getRawFromIndex(t2->where_row[start]));
+	if(it==reverse_transmap.end());
+	else{
+	    mid_storage[it->second].c2_records.push_back(t2->where_row[start]);
+	}
+    }
+}
+void Table::secondCallback(MidStor& mid_storage, int no){
 	// make record_set
 	//int static_ii = 0;
 	vector<vector<int>> record_set_;
 	int from = (int)ceil(mid_storage.size()/4*no);
-	int to = (int)floor(mid_storage.size()/4*(no+1));
+	int to = (int)ceil(mid_storage.size()/4*(no+1));
 	auto mid_it = mid_storage.begin();
+	cout << from << ":from" << endl;
+	cout << to << ": to" << endl;
 	advance(mid_it, from);
 	int i=0;
 	int ii=0;
