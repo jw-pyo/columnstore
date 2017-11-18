@@ -3,7 +3,7 @@
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <unistd.h>
-
+#include <string>
 #include <thread>
 #include <mutex>
 #include <chrono>
@@ -15,6 +15,7 @@ using namespace std::chrono;
 
 //static int static_i = 0;
 int main(){
+int tx_time = 0;
 
 cout << "start " << endl;
 high_resolution_clock::time_point begin, end;
@@ -34,8 +35,32 @@ cout << "Elapsed time loading 3 tables: " << duration << " sec" << endl;
 t_sensors->getTblMemory();
 t_entities->getTblMemory();
 t_sample_game->getTblMemory();
+
+Table* tt[3] = {t_sensors, t_entities, t_sample_game};
+while(true){
+    int i;
+    string que; // "INSERT|108|22|2"
+    cout << "Choose the table. " << endl;
+    cout << "0. sensors " << endl;
+    cout << "1. entities " << endl;
+    cout << "2. events " << endl;
+    cout << "Table number: ";
+    cin >> i ;
+    cout << " Query input: ";
+    cin >> que;
+    tt[i]->Request(que, tx_time++);
+    
+    cout << "Quit? [y/n]" << endl;
+    char q;
+    cin >> q;
+    if(q=='y' || q=='Y') break;
+    else;
+}
+
+
 /* table select */
 
+/*
 //query 1-1
 
 begin = high_resolution_clock::now();
@@ -218,7 +243,7 @@ t_sample_game->reset();
 t_sensors->reset();
 t_entities->reset();
 
-
+*/
 delete t_sensors;
 delete t_entities;
 delete t_sample_game;
